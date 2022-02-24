@@ -14,6 +14,7 @@
 //
 
 use crate::{
+    checkpoint::ExportImportFilesMetaData,
     column_family::AsColumnFamilyRef,
     column_family::BoundColumnFamily,
     column_family::UnboundColumnFamily,
@@ -2111,6 +2112,30 @@ impl<T: ThreadMode, D: DBInner> DBCommon<T, D> {
         drop(cf);
         Ok(())
     }
+
+    /// Create column family from importing data
+    fn create_column_family_with_import(
+        &self,
+        name: &str,
+        opts: &Options,
+        metadata: &ExportImportFilesMetaData,
+    ) -> Result<*mut ffi::rocksdb_column_family_handle_t, Error> {
+        let cf_name = if let Ok(c) = CString::new(name.as_bytes()) {
+            c
+        } else {
+            return Err(Error::new(
+                "Failed to convert path to CString when creating cf".to_owned(),
+            ));
+        };
+        Ok(unsafe {
+            ffi_try!(ffi::rocksdb_create_column_family_with_import(
+                self.inner.inner(),
+                opts.inner,
+                cf_name.as_ptr(),
+                metadata.inner,
+            ))
+        })
+    }
 }
 
 impl<I: DBInner> DBCommon<SingleThreaded, I> {
@@ -2123,6 +2148,19 @@ impl<I: DBInner> DBCommon<SingleThreaded, I> {
         Ok(())
     }
 
+    /// Create column family from importing data
+    pub fn create_cf_with_import<N: AsRef<str>>(
+        &mut self,
+        name: N,
+        opts: &Options,
+        metadata: &ExportImportFilesMetaData,
+    ) -> Result<(), Error> {
+        let inner = self.create_column_family_with_import(name.as_ref(), opts, metadata)?;
+        self.cfs
+            .cfs
+            .insert(name.as_ref().to_string(), ColumnFamily { inner });
+        Ok(())
+    }
     /// Drops the column family with the given name
     pub fn drop_cf(&mut self, name: &str) -> Result<(), Error> {
         if let Some(cf) = self.cfs.cfs.remove(name) {
@@ -2142,6 +2180,21 @@ impl<I: DBInner> DBCommon<MultiThreaded, I> {
     /// Creates column family with given name and options
     pub fn create_cf<N: AsRef<str>>(&self, name: N, opts: &Options) -> Result<(), Error> {
         let inner = self.create_inner_cf_handle(name.as_ref(), opts)?;
+        self.cfs.cfs.write().unwrap().insert(
+            name.as_ref().to_string(),
+            Arc::new(UnboundColumnFamily { inner }),
+        );
+        Ok(())
+    }
+
+    /// Create column family from importing data
+    pub fn create_cf_with_import<N: AsRef<str>>(
+        &mut self,
+        name: N,
+        opts: &Options,
+        metadata: &ExportImportFilesMetaData,
+    ) -> Result<(), Error> {
+        let inner = self.create_column_family_with_import(name.as_ref(), opts, metadata)?;
         self.cfs.cfs.write().unwrap().insert(
             name.as_ref().to_string(),
             Arc::new(UnboundColumnFamily { inner }),
