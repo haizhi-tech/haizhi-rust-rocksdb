@@ -5,6 +5,6 @@ error[E0597]: `db` does not live long enough
   |         ----- borrow later stored here
 5 |         let db = DB::open_default("foo").unwrap();
 6 |         db.iterator(IteratorMode::Start)
-  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ borrowed value does not live long enough
+  |         ^^ borrowed value does not live long enough
 7 |     };
   |     - `db` dropped here while still borrowed
