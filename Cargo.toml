@@ -16,7 +16,7 @@ exclude = [".gitignore", ".travis.yml", "deploy.sh", "test/**/*"]
 members = ["librocksdb-sys"]
 
 [features]
-default = ["snappy", "lz4", "zstd", "zlib", "bzip2", "bindgen-runtime"]
+default = ["snappy", "lz4", "zstd", "zlib", "bzip2", "bindgen-runtime", "serde1"]
 jemalloc = ["haizhi-librocksdb-sys/jemalloc"]
 io-uring = ["haizhi-librocksdb-sys/io-uring"]
 valgrind = []
@@ -39,6 +39,7 @@ librocksdb-sys = { path = "librocksdb-sys", version = "0.2.0", default-features 
     "static",
 ] }
 serde = { version = "1", features = ["derive"], optional = true }
+serde_json = "1.0.0"
 
 [dev-dependencies]
 trybuild = "1"
