@@ -17,11 +17,13 @@
 //!
 //! [1]: https://github.com/facebook/rocksdb/wiki/Checkpoints
 
+use crate::AsColumnFamilyRef;
+use crate::{ffi, Error, DB};
 use libc::c_char;
 
 use crate::db::DBInner;
 use crate::ffi_util::to_cpath;
-use crate::{ffi, Error, DB, ThreadMode, DBCommon, ColumnFamily};
+use crate::{ThreadMode, DBCommon, ColumnFamily};
 use std::ffi::{CString, CStr};
 use std::fs::File;
 use std::io::{Read, Write};
@@ -194,7 +196,7 @@ impl<'db> Checkpoint<'db> {
     /// Exports all live SST files of a specified Column Family onto export_dir
     pub fn export_column_family<P: AsRef<Path>>(
         &self,
-        cf: &ColumnFamily,
+        cf: &impl AsColumnFamilyRef,
         export_dir: P,
     ) -> Result<ExportImportFilesMetaData, Error> {
         let path = export_dir.as_ref();
@@ -211,7 +213,7 @@ impl<'db> Checkpoint<'db> {
         unsafe {
             inner = ffi_try!(ffi::rocksdb_column_family_export(
                 self.inner,
-                cf.inner,
+                cf.inner(),
                 cpath.as_ptr(),
             ));
 
