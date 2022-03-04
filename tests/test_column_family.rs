@@ -365,6 +365,8 @@ fn test_create_cf_with_import() {
 
     assert!(origin_db.put(b"0", b"0").is_ok());
     let cf1 = origin_db.cf_handle("cf1").unwrap();
+    // an illegal string key
+    assert!(origin_db.put_cf(&cf1, vec![1], b"illegal1").is_ok());
     assert!(origin_db.put_cf(&cf1, b"1", b"1").is_ok());
     let cf2 = origin_db.cf_handle("cf2").unwrap();
     assert!(origin_db.put_cf(&cf2, b"2", b"2").is_ok());
@@ -391,7 +393,10 @@ fn test_create_cf_with_import() {
     assert!(result.is_ok());
     assert!(recover_db.cf_handle("cf1").is_some());
     let cf1 = recover_db.cf_handle("cf1").unwrap();
-    assert_eq!(recover_db.get_cf(&cf1, b"1").unwrap().unwrap(), b"1");
+    assert_eq!(
+        recover_db.get_cf(&cf1, vec![1]).unwrap().unwrap(),
+        b"illegal1"
+    );
     assert!(recover_db.cf_handle("cf2").is_none());
     assert!(recover_db.get_cf(&cf1, b"2").unwrap().is_none());
     // then we will test origin db
@@ -404,6 +409,10 @@ fn test_create_cf_with_import() {
         .create_cf_with_import("cf1", &opts, &recover_metadata)
         .is_ok());
     let cf1 = origin_db.cf_handle("cf1").unwrap();
+    assert_eq!(
+        origin_db.get_cf(&cf1, vec![1]).unwrap().unwrap(),
+        b"illegal1"
+    );
     assert_eq!(origin_db.get_cf(&cf1, b"1").unwrap().unwrap(), b"1");
     assert!(origin_db.get_cf(&cf1, b"11").unwrap().is_none());
     assert!(origin_db.put_cf(&cf1, b"11", b"11").is_ok());
@@ -412,6 +421,10 @@ fn test_create_cf_with_import() {
         .create_cf_with_import("cf3", &opts, &recover_metadata)
         .is_ok());
     let cf3 = origin_db.cf_handle("cf3").unwrap();
+    assert_eq!(
+        origin_db.get_cf(&cf3, vec![1]).unwrap().unwrap(),
+        b"illegal1"
+    );
     assert_eq!(origin_db.get_cf(&cf3, b"1").unwrap().unwrap(), b"1");
     assert!(origin_db.get_cf(&cf3, b"11").unwrap().is_none());
 }

@@ -65,8 +65,8 @@ struct RocksdbLevelMetaData {
     size: i32,
     smallest_seqno: u64,
     largest_seqno: u64,
-    smallestkey: String,
-    largestkey: String,
+    hex_smallestkey: String,
+    hex_largestkey: String,
     num_reads_sampled: u64,
     being_compacted: i32,
     num_entries: u64,
@@ -114,8 +114,8 @@ impl ExportImportFilesMetaData {
                 let name = CString::new(file.name).unwrap();
                 let directory = CString::new(file.directory).unwrap();
                 let db_path = CString::new(file.db_path).unwrap();
-                let smallestkey = CString::new(file.smallestkey).unwrap();
-                let largestkey = CString::new(file.largestkey).unwrap();
+                let hex_smallestkey = CString::new(file.hex_smallestkey).unwrap();
+                let hex_largestkey = CString::new(file.hex_largestkey).unwrap();
                 let file_checksum = CString::new(file.file_checksum).unwrap();
                 let file_checksum_func_name = CString::new(file.file_checksum_func_name).unwrap();
                 files.push(ffi_try!(ffi::rocksdb_new_live_file_metadata(
@@ -130,8 +130,8 @@ impl ExportImportFilesMetaData {
                     file.size,
                     file.smallest_seqno,
                     file.largest_seqno,
-                    smallestkey.as_ptr(),
-                    largestkey.as_ptr(),
+                    hex_smallestkey.as_ptr(),
+                    hex_largestkey.as_ptr(),
                     file.num_reads_sampled,
                     file.being_compacted,
                     file.num_entries,
