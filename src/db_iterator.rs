@@ -96,6 +96,7 @@ impl<'a, D: DBAccess> DBRawIteratorWithThreadMode<'a, D> {
         cf_handle: *mut ffi::rocksdb_column_family_handle_t,
         readopts: ReadOptions,
     ) -> Self {
+        println!("this is new_cf");
         unsafe {
             Self {
                 inner: ffi::rocksdb_create_iterator_cf(db.inner(), readopts.inner, cf_handle),
@@ -329,6 +330,7 @@ impl<'a, D: DBAccess> DBRawIteratorWithThreadMode<'a, D> {
 
 impl<'a, D: DBAccess> Drop for DBRawIteratorWithThreadMode<'a, D> {
     fn drop(&mut self) {
+        println!("this is drop of DBRawIteratorWithThreadMode");
         unsafe {
             ffi::rocksdb_iter_destroy(self.inner);
         }
@@ -408,6 +410,7 @@ impl<'a, D: DBAccess> DBIteratorWithThreadMode<'a, D> {
         readopts: ReadOptions,
         mode: IteratorMode,
     ) -> Self {
+        println!("this is new_cf with mode");
         let mut rv = DBIteratorWithThreadMode {
             raw: DBRawIteratorWithThreadMode::new_cf(db, cf_handle, readopts),
             direction: Direction::Forward, // blown away by set_mode()
@@ -545,6 +548,7 @@ impl Iterator for DBWALIterator {
 
 impl Drop for DBWALIterator {
     fn drop(&mut self) {
+        println!("this is drop of DBWALIterator");
         unsafe {
             ffi::rocksdb_wal_iter_destroy(self.inner);
         }
