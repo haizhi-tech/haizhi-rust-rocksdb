@@ -1160,6 +1160,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
 
     /// Opens a raw iterator over the database, using the default read options
     pub fn raw_iterator<'a: 'b, 'b>(&'a self) -> DBRawIteratorWithThreadMode<'b, Self> {
+        println!("this is raw_iterator of rust-rocksdb");
         let opts = ReadOptions::default();
         DBRawIteratorWithThreadMode::new(self, opts)
     }
@@ -1169,6 +1170,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         &'a self,
         cf_handle: &impl AsColumnFamilyRef,
     ) -> DBRawIteratorWithThreadMode<'b, Self> {
+        println!("this is raw_iterator_cf of rust-rocksdb");
         let opts = ReadOptions::default();
         DBRawIteratorWithThreadMode::new_cf(self, cf_handle.inner(), opts)
     }
@@ -1178,6 +1180,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         &'a self,
         readopts: ReadOptions,
     ) -> DBRawIteratorWithThreadMode<'b, Self> {
+        println!("this is raw_iterator_opt of rust-rocksdb");
         DBRawIteratorWithThreadMode::new(self, readopts)
     }
 
@@ -1187,6 +1190,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         cf_handle: &impl AsColumnFamilyRef,
         readopts: ReadOptions,
     ) -> DBRawIteratorWithThreadMode<'b, Self> {
+        println!("this is raw_iterator_cf_opt of rust-rocksdb");
         DBRawIteratorWithThreadMode::new_cf(self, cf_handle.inner(), readopts)
     }
 
