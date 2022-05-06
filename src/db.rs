@@ -723,6 +723,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
 
     /// Flushes database memtables to SST files on the disk using default options.
     pub fn flush(&self) -> Result<(), Error> {
+        println!("this is flush of rust-rocksdb");
         self.flush_opt(&FlushOptions::default())
     }
 
@@ -732,6 +733,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         cf: &impl AsColumnFamilyRef,
         flushopts: &FlushOptions,
     ) -> Result<(), Error> {
+        println!("this is flush_cf_opt of rust-rocksdb");
         unsafe {
             ffi_try!(ffi::rocksdb_flush_cf(
                 self.inner,
@@ -745,7 +747,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
     /// Flushes database memtables to SST files on the disk for a given column family using default
     /// options.
     pub fn flush_cf(&self, cf: &impl AsColumnFamilyRef) -> Result<(), Error> {
-        println!("this is flush cf");
+        println!("this is flush_cf of rust-rocksdb");
         self.flush_cf_opt(cf, &FlushOptions::default())
     }
 
