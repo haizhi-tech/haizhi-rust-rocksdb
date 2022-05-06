@@ -82,6 +82,7 @@ pub struct DBRawIteratorWithThreadMode<'a, D: DBAccess> {
 
 impl<'a, D: DBAccess> DBRawIteratorWithThreadMode<'a, D> {
     pub(crate) fn new(db: &D, readopts: ReadOptions) -> Self {
+        println!("this is new of DBRawIteratorWithThreadMode of rust-rocksdb");
         unsafe {
             Self {
                 inner: ffi::rocksdb_create_iterator(db.inner(), readopts.inner),
@@ -96,7 +97,7 @@ impl<'a, D: DBAccess> DBRawIteratorWithThreadMode<'a, D> {
         cf_handle: *mut ffi::rocksdb_column_family_handle_t,
         readopts: ReadOptions,
     ) -> Self {
-        tracing::info!("this is new_cf");
+        tracing::info!("this is new_cf of DBRawIteratorWithThreadMode of rust-rocksdb");
         unsafe {
             Self {
                 inner: ffi::rocksdb_create_iterator_cf(db.inner(), readopts.inner, cf_handle),
@@ -395,6 +396,7 @@ pub enum IteratorMode<'a> {
 
 impl<'a, D: DBAccess> DBIteratorWithThreadMode<'a, D> {
     pub(crate) fn new(db: &D, readopts: ReadOptions, mode: IteratorMode) -> Self {
+        tracing::info!("this is new with mode of DBIteratorWithThreadMode of rust-rocksdb");
         let mut rv = DBIteratorWithThreadMode {
             raw: DBRawIteratorWithThreadMode::new(db, readopts),
             direction: Direction::Forward, // blown away by set_mode()
@@ -410,7 +412,7 @@ impl<'a, D: DBAccess> DBIteratorWithThreadMode<'a, D> {
         readopts: ReadOptions,
         mode: IteratorMode,
     ) -> Self {
-        tracing::info!("this is new_cf with mode");
+        tracing::info!("this is new_cf with mode of DBIteratorWithThreadMode of rust-rocksdb");
         let mut rv = DBIteratorWithThreadMode {
             raw: DBRawIteratorWithThreadMode::new_cf(db, cf_handle, readopts),
             direction: Direction::Forward, // blown away by set_mode()

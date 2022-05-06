@@ -1195,6 +1195,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
     }
 
     pub fn snapshot(&self) -> SnapshotWithThreadMode<Self> {
+        println!("this is snapshot of rust-rocksdb");
         SnapshotWithThreadMode::<Self>::new(self)
     }
 
