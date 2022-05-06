@@ -745,6 +745,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
     /// Flushes database memtables to SST files on the disk for a given column family using default
     /// options.
     pub fn flush_cf(&self, cf: &impl AsColumnFamilyRef) -> Result<(), Error> {
+        println!("this is flush cf");
         self.flush_cf_opt(cf, &FlushOptions::default())
     }
 
