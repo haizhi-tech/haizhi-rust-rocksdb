@@ -1076,6 +1076,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         &'a self,
         mode: IteratorMode,
     ) -> DBIteratorWithThreadMode<'b, Self> {
+        println!("this is iterator of rust-rocksdb");
         let readopts = ReadOptions::default();
         self.iterator_opt(mode, readopts)
     }
@@ -1085,6 +1086,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         mode: IteratorMode,
         readopts: ReadOptions,
     ) -> DBIteratorWithThreadMode<'b, Self> {
+        println!("this is iterator_opt of rust-rocksdb");
         DBIteratorWithThreadMode::new(self, readopts, mode)
     }
 
@@ -1096,6 +1098,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         readopts: ReadOptions,
         mode: IteratorMode,
     ) -> DBIteratorWithThreadMode<'b, Self> {
+        println!("this is iterator_cf_opt of rust-rocksdb");
         DBIteratorWithThreadMode::new_cf(self, cf_handle.inner(), readopts, mode)
     }
 
@@ -1106,6 +1109,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         &'a self,
         mode: IteratorMode,
     ) -> DBIteratorWithThreadMode<'b, Self> {
+        println!("this is full_iterator of rust-rocksdb");
         let mut opts = ReadOptions::default();
         opts.set_total_order_seek(true);
         DBIteratorWithThreadMode::new(self, opts, mode)
@@ -1115,6 +1119,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         &'a self,
         prefix: P,
     ) -> DBIteratorWithThreadMode<'b, Self> {
+        println!("this is prefix_iterator of rust-rocksdb");
         let mut opts = ReadOptions::default();
         opts.set_prefix_same_as_start(true);
         DBIteratorWithThreadMode::new(
@@ -1129,6 +1134,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         cf_handle: &impl AsColumnFamilyRef,
         mode: IteratorMode,
     ) -> DBIteratorWithThreadMode<'b, Self> {
+        println!("this is iterator_cf of rust-rocksdb");
         let opts = ReadOptions::default();
         DBIteratorWithThreadMode::new_cf(self, cf_handle.inner(), opts, mode)
     }
@@ -1138,6 +1144,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         cf_handle: &impl AsColumnFamilyRef,
         mode: IteratorMode,
     ) -> DBIteratorWithThreadMode<'b, Self> {
+        println!("this is full_iterator_cf of rust-rocksdb");
         let mut opts = ReadOptions::default();
         opts.set_total_order_seek(true);
         DBIteratorWithThreadMode::new_cf(self, cf_handle.inner(), opts, mode)
@@ -1148,6 +1155,7 @@ impl<T: ThreadMode> DBWithThreadMode<T> {
         cf_handle: &impl AsColumnFamilyRef,
         prefix: P,
     ) -> DBIteratorWithThreadMode<'a, Self> {
+        println!("this is prefix_iterator_cf of rust-rocksdb");
         let mut opts = ReadOptions::default();
         opts.set_prefix_same_as_start(true);
         DBIteratorWithThreadMode::<'a, Self>::new_cf(
