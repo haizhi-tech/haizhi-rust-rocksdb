@@ -274,6 +274,17 @@ impl<T: ThreadMode, D: DBInner> DBAccess for DBCommon<T, D> {
     }
 }
 
+pub struct Ranges<'a> {
+    start_key: &'a [u8],
+    end_key: &'a [u8],
+}
+
+impl<'a> Ranges<'a> {
+    pub fn new(start_key: &'a [u8], end_key: &'a [u8]) -> Ranges<'a> {
+        Ranges { start_key, end_key }
+    }
+}
+
 pub struct DBWithThreadModeInner {
     inner: *mut ffi::rocksdb_t,
 }
@@ -343,7 +354,6 @@ enum AccessType<'a> {
     WithTTL { ttl: Duration },
 }
 
-/// Methods of `DBWithThreadMode`.
 impl<T: ThreadMode> DBWithThreadMode<T> {
     /// Opens a database with default options.
     pub fn open_default<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
@@ -1930,6 +1940,44 @@ impl<T: ThreadMode, D: DBInner> DBCommon<T, D> {
             ));
             Ok(())
         }
+    }
+
+    pub fn get_approximate_sizes_with_option(&self, cf: &impl AsColumnFamilyRef, ranges: &[Ranges]) -> Result<Vec<u64>, Error> {
+        let start_keys: Vec<*const i8> = ranges.iter().map(|x| x.start_key.as_ptr() as *const c_char).collect();
+        let start_key_lens: Vec<_> = ranges.iter().map(|x| x.start_key.len()).collect();
+        let end_keys: Vec<*const i8> = ranges.iter().map(|x| x.end_key.as_ptr() as *const c_char).collect();
+        let end_key_lens: Vec<_> = ranges.iter().map(|x| x.end_key.len()).collect();
+        let db = self.inner.inner();
+        // let include_files = approximate_option.include_files;
+        // let include_memtable = approximate_option.include_memtable;
+        // let files_size_error_margin = approximate_option.files_size_error_margin;
+        let mut sizes: Vec<u64> = vec![0; ranges.len()];
+        let (n, start_key_ptr, start_key_len_ptr, end_key_ptr, end_key_len_ptr, size_ptr) = (
+            ranges.len() as i32,
+            start_keys.as_ptr(), 
+            start_key_lens.as_ptr(),
+            end_keys.as_ptr(),
+            end_key_lens.as_ptr(),
+            sizes.as_mut_ptr(),
+        );
+        unsafe{
+            ffi_try!(
+                ffi::rocksdb_approximate_sizes_cf_with_options(
+                    db,
+                    cf.inner(),
+                    n,
+                    start_key_ptr,
+                    start_key_len_ptr,
+                    end_key_ptr,
+                    end_key_len_ptr,
+                    size_ptr,
+                    true,
+                    true,
+                    10.0,
+                )
+            )
+        }
+        Ok(sizes)
     }
 
     /// Returns a list of all table files with their level, start key
