@@ -1942,10 +1942,20 @@ impl<T: ThreadMode, D: DBInner> DBCommon<T, D> {
         }
     }
 
-    pub fn get_approximate_sizes_with_option(&self, cf: &impl AsColumnFamilyRef, ranges: &[Ranges]) -> Result<Vec<u64>, Error> {
-        let start_keys: Vec<*const i8> = ranges.iter().map(|x| x.start_key.as_ptr() as *const c_char).collect();
+    pub fn get_approximate_sizes_with_option(
+        &self,
+        cf: &impl AsColumnFamilyRef,
+        ranges: &[Ranges],
+    ) -> Result<Vec<u64>, Error> {
+        let start_keys: Vec<*const i8> = ranges
+            .iter()
+            .map(|x| x.start_key.as_ptr() as *const c_char)
+            .collect();
         let start_key_lens: Vec<_> = ranges.iter().map(|x| x.start_key.len()).collect();
-        let end_keys: Vec<*const i8> = ranges.iter().map(|x| x.end_key.as_ptr() as *const c_char).collect();
+        let end_keys: Vec<*const i8> = ranges
+            .iter()
+            .map(|x| x.end_key.as_ptr() as *const c_char)
+            .collect();
         let end_key_lens: Vec<_> = ranges.iter().map(|x| x.end_key.len()).collect();
         let db = self.inner.inner();
         // let include_files = approximate_option.include_files;
@@ -1954,28 +1964,26 @@ impl<T: ThreadMode, D: DBInner> DBCommon<T, D> {
         let mut sizes: Vec<u64> = vec![0; ranges.len()];
         let (n, start_key_ptr, start_key_len_ptr, end_key_ptr, end_key_len_ptr, size_ptr) = (
             ranges.len() as i32,
-            start_keys.as_ptr(), 
+            start_keys.as_ptr(),
             start_key_lens.as_ptr(),
             end_keys.as_ptr(),
             end_key_lens.as_ptr(),
             sizes.as_mut_ptr(),
         );
-        unsafe{
-            ffi_try!(
-                ffi::rocksdb_approximate_sizes_cf_with_options(
-                    db,
-                    cf.inner(),
-                    n,
-                    start_key_ptr,
-                    start_key_len_ptr,
-                    end_key_ptr,
-                    end_key_len_ptr,
-                    size_ptr,
-                    true,
-                    true,
-                    10.0,
-                )
-            )
+        unsafe {
+            ffi_try!(ffi::rocksdb_approximate_sizes_cf_with_options(
+                db,
+                cf.inner(),
+                n,
+                start_key_ptr,
+                start_key_len_ptr,
+                end_key_ptr,
+                end_key_len_ptr,
+                size_ptr,
+                true,
+                true,
+                10.0,
+            ))
         }
         Ok(sizes)
     }
