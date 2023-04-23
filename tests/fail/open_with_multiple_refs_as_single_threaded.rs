@@ -1,4 +1,4 @@
-use rocksdb::{SingleThreaded, DBWithThreadMode, Options};
+use haizhi_rocksdb::{SingleThreaded, DBWithThreadMode, Options};
 
 fn main() {
     let db = DBWithThreadMode::<SingleThreaded>::open_default("/path/to/dummy").unwrap();

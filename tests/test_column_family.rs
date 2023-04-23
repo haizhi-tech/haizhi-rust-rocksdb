@@ -16,7 +16,7 @@ mod util;
 
 use pretty_assertions::assert_eq;
 
-use rocksdb::{ColumnFamilyDescriptor, MergeOperands, Options, DB, DEFAULT_COLUMN_FAMILY_NAME};
+use haizhi_rocksdb::{ColumnFamilyDescriptor, MergeOperands, Options, DB, DEFAULT_COLUMN_FAMILY_NAME};
 use util::DBPath;
 
 use std::fs;
@@ -288,7 +288,7 @@ fn test_no_leaked_column_family() {
         opts.create_if_missing(true);
         opts.create_missing_column_families(true);
 
-        let mut write_options = rocksdb::WriteOptions::default();
+        let mut write_options = haizhi_rocksdb::WriteOptions::default();
         write_options.set_sync(false);
         write_options.disable_wal(true);
 
@@ -308,7 +308,7 @@ fn test_no_leaked_column_family() {
             db.create_cf(&cf_name, &Options::default()).unwrap();
             let cf = db.cf_handle(&cf_name).unwrap();
 
-            let mut batch = rocksdb::WriteBatch::default();
+            let mut batch = haizhi_rocksdb::WriteBatch::default();
             for key_index in 0..100 {
                 batch.put_cf(&cf, format!("k{}", key_index), &large_blob);
             }

@@ -79,11 +79,11 @@ jobs:
       - name: Install dependencies
         if: runner.os == 'Windows'
         run: choco install llvm -y
-      - name: Run librocksdb-sys tests
+      - name: Run haizhi-librocksdb-sys tests
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path=librocksdb-sys/Cargo.toml
+          args: --manifest-path=haizhi-librocksdb-sys/Cargo.toml
       - name: Run rocksdb tests (single-threaded cf)
         uses: actions-rs/cargo@v1
         with:

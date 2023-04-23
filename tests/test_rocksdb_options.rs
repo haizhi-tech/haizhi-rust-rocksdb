@@ -16,7 +16,7 @@ mod util;
 
 use std::{fs, io::Read as _};
 
-use rocksdb::{BlockBasedOptions, DBCompressionType, DataBlockIndexType, Options, ReadOptions, DB};
+use haizhi_rocksdb::{BlockBasedOptions, DBCompressionType, DataBlockIndexType, Options, ReadOptions, DB};
 use util::DBPath;
 
 #[test]

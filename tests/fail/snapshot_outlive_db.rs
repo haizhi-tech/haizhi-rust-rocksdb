@@ -1,4 +1,4 @@
-use rocksdb::DB;
+use haizhi_rocksdb::DB;
 
 fn main() {
     let _snapshot = {

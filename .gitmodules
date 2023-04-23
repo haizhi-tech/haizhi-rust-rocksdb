@@ -1,10 +1,10 @@
-[submodule "rocksdb_sys/snappy"]
-	path = librocksdb-sys/snappy
+[submodule "haizhi-rocksdb-sys/snappy"]
+	path = haizhi-librocksdb-sys/snappy
 	url = https://github.com/google/snappy.git
-[submodule "librocksdb-sys/lz4"]
-	path = librocksdb-sys/lz4
+[submodule "haizhi-librocksdb-sys/lz4"]
+	path = haizhi-librocksdb-sys/lz4
 	url = https://github.com/lz4/lz4.git
-[submodule "librocksdb-sys/rocksdb"]
-	path = librocksdb-sys/rocksdb
-	url = https://github.com/haizhi-tech/rocksdb.git
+[submodule "haizhi-librocksdb-sys/rocksdb"]
+	path = haizhi-librocksdb-sys/rocksdb
+	url = https://github.com/githaizhi-tech/rocksdb.git
 	branch = feature/approximate-size-with-option

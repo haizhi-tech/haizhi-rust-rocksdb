@@ -1,4 +1,4 @@
-use rocksdb::{TransactionDB, SingleThreaded};
+use haizhi_rocksdb::{TransactionDB, SingleThreaded};
 
 fn main() {
     let _snapshot = {

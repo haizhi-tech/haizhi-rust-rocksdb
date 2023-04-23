@@ -16,7 +16,7 @@ mod util;
 
 use std::{sync::Arc, thread};
 
-use rocksdb::DB;
+use haizhi_rocksdb::DB;
 use util::DBPath;
 
 const N: usize = 100_000;

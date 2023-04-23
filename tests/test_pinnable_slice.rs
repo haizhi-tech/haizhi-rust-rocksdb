@@ -16,7 +16,7 @@ mod util;
 
 use pretty_assertions::assert_eq;
 
-use rocksdb::{Options, DB};
+use haizhi_rocksdb::{Options, DB};
 use util::DBPath;
 
 #[test]

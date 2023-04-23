@@ -1,4 +1,4 @@
-use rocksdb::{DB, checkpoint::Checkpoint};
+use haizhi_rocksdb::{DB, checkpoint::Checkpoint};
 
 fn main() {
     let _checkpoint = {

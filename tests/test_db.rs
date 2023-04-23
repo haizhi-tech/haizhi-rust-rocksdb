@@ -18,7 +18,7 @@ use std::{mem, sync::Arc, thread, time::Duration};
 
 use pretty_assertions::assert_eq;
 
-use rocksdb::{
+use haizhi_rocksdb::{
     perf::get_memory_usage_stats, BlockBasedOptions, BottommostLevelCompaction, Cache,
     ColumnFamilyDescriptor, CompactOptions, CuckooTableOptions, DBAccess, DBCompactionStyle,
     DBWithThreadMode, Env, Error, ErrorKind, FifoCompactOptions, IteratorMode, MultiThreaded,
@@ -390,7 +390,7 @@ struct OperationCounts {
     deletes: usize,
 }
 
-impl rocksdb::WriteBatchIterator for OperationCounts {
+impl haizhi_rocksdb::WriteBatchIterator for OperationCounts {
     fn put(&mut self, _key: Box<[u8]>, _value: Box<[u8]>) {
         self.puts += 1;
     }
@@ -747,8 +747,8 @@ fn env_and_dbpaths_test() {
 
         {
             let paths = vec![
-                rocksdb::DBPath::new(&path1, 20 << 20).unwrap(),
-                rocksdb::DBPath::new(&path2, 30 << 20).unwrap(),
+                haizhi_rocksdb::DBPath::new(&path1, 20 << 20).unwrap(),
+                haizhi_rocksdb::DBPath::new(&path2, 30 << 20).unwrap(),
             ];
             opts.set_db_paths(&paths);
         }
