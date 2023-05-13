@@ -15,6 +15,7 @@
 mod util;
 
 use pretty_assertions::assert_eq;
+use haizhi_rocksdb as rocksdb;
 
 use rocksdb::{Direction, IteratorMode, MemtableFactory, Options, DB};
 use util::{assert_iter, assert_iter_reversed, pair, DBPath};

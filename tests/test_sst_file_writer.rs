@@ -15,6 +15,7 @@
 mod util;
 
 use pretty_assertions::assert_eq;
+use haizhi_rocksdb as rocksdb;
 
 use rocksdb::{Error, Options, SstFileWriter, DB};
 use util::DBPath;

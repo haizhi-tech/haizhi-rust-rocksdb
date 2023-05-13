@@ -15,6 +15,8 @@
 mod util;
 
 use pretty_assertions::assert_eq;
+use haizhi_rocksdb as rocksdb;
+
 use rocksdb::{merge_operator::MergeFn, DBCompactionStyle, MergeOperands, Options, DB};
 use serde::{Deserialize, Serialize};
 use util::DBPath;

@@ -16,6 +16,7 @@
 mod util;
 
 use pretty_assertions::assert_eq;
+use haizhi_rocksdb as rocksdb;
 
 use rocksdb::{
     CuckooTableOptions, DBAccess, Direction, Error, ErrorKind, IteratorMode, Options, ReadOptions,
