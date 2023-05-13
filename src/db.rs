@@ -2324,6 +2324,7 @@ impl<T: ThreadMode, D: DBInner> DBCommon<T, D> {
         &self,
         cf: &impl AsColumnFamilyRef,
         ranges: &[Ranges],
+        files_size_error_margin: f64,
     ) -> Result<Vec<u64>, Error> {
         let start_keys: Vec<*const i8> = ranges
             .iter()
@@ -2360,7 +2361,7 @@ impl<T: ThreadMode, D: DBInner> DBCommon<T, D> {
                 size_ptr,
                 true,
                 true,
-                10.0,
+                files_size_error_margin,
             ))
         }
         Ok(sizes)

@@ -15,6 +15,7 @@
 mod util;
 
 use std::{fs, io::Read as _};
+use haizhi_rocksdb as rocksdb;
 
 use rocksdb::checkpoint::Checkpoint;
 use rocksdb::{

@@ -19,6 +19,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{mem, sync::Arc, thread, time::Duration};
 
 use pretty_assertions::assert_eq;
+use haizhi_rocksdb as rocksdb;
 
 use rocksdb::statistics::{Histogram, StatsLevel, Ticker};
 use rocksdb::{
