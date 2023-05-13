@@ -1,7 +1,7 @@
 [package]
-name = "rocksdb"
+name = "haizhi-rocksdb"
 description = "Rust wrapper for Facebook's RocksDB embeddable database"
-version = "0.20.1"
+version = "0.2.0"
 edition = "2018"
 rust-version = "1.60"
 authors = ["Tyler Neely <t@jujit.su>", "David Greenberg <dsg123456789@gmail.com>"]
@@ -22,21 +22,21 @@ members = ["librocksdb-sys"]
 
 [features]
 default = ["snappy", "lz4", "zstd", "zlib", "bzip2"]
-jemalloc = ["librocksdb-sys/jemalloc"]
-io-uring = ["librocksdb-sys/io-uring"]
+jemalloc = ["haizhi-librocksdb-sys/jemalloc"]
+io-uring = ["haizhi-librocksdb-sys/io-uring"]
 valgrind = []
-snappy = ["librocksdb-sys/snappy"]
-lz4 = ["librocksdb-sys/lz4"]
-zstd = ["librocksdb-sys/zstd"]
-zlib = ["librocksdb-sys/zlib"]
-bzip2 = ["librocksdb-sys/bzip2"]
-rtti = ["librocksdb-sys/rtti"]
+snappy = ["haizhi-librocksdb-sys/snappy"]
+lz4 = ["haizhi-librocksdb-sys/lz4"]
+zstd = ["haizhi-librocksdb-sys/zstd"]
+zlib = ["haizhi-librocksdb-sys/zlib"]
+bzip2 = ["haizhi-librocksdb-sys/bzip2"]
+rtti = ["haizhi-librocksdb-sys/rtti"]
 multi-threaded-cf = []
 serde1 = ["serde"]
 
 [dependencies]
 libc = "0.2"
-librocksdb-sys = { path = "librocksdb-sys", version = "0.10.0" }
+haizhi-librocksdb-sys = { path = "librocksdb-sys", version = "0.2.0" }
 serde = { version = "1", features = [ "derive" ], optional = true }
 
 [dev-dependencies]
