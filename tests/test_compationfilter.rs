@@ -14,8 +14,8 @@
 
 mod util;
 
-use pretty_assertions::assert_eq;
 use haizhi_rocksdb as rocksdb;
+use pretty_assertions::assert_eq;
 
 use rocksdb::{CompactionDecision, Options, DB};
 use util::DBPath;

@@ -1,0 +1,30 @@
+{
+  "db_comparator_name": "leveldb.BytewiseComparator",
+  "files": [
+    {
+      "column_family_name": "",
+      "level": 0,
+      "relative_filename": "",
+      "name": "/000013.sst",
+      "file_number": 13,
+      "file_type": 2,
+      "directory": "",
+      "db_path": "/var/folders/dn/lp2302mx2nsgz661x9c7hs0r0000gp/T/_rust_rocksdb_export_column_family_db1_backupevgGEf/db",
+      "size": 1015,
+      "smallest_seqno": 2,
+      "largest_seqno": 2,
+      "hex_smallestkey": "31",
+      "hex_largestkey": "31",
+      "num_reads_sampled": 0,
+      "being_compacted": 0,
+      "num_entries": 0,
+      "num_deletions": 0,
+      "temperature": 0,
+      "oldest_blob_file_number": 0,
+      "oldest_ancester_time": 0,
+      "file_creation_time": 0,
+      "file_checksum": "",
+      "file_checksum_func_name": ""
+    }
+  ]
+}
