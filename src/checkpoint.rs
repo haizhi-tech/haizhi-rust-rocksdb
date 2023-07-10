@@ -19,12 +19,12 @@
 
 use crate::AsColumnFamilyRef;
 use crate::{ffi, Error, DB};
-use libc::c_char;
+use libc::{c_char, int32_t};
 
 use crate::db::DBInner;
 use crate::ffi_util::to_cpath;
-use crate::{ThreadMode, DBCommon, ColumnFamily};
-use std::ffi::{CString, CStr};
+use crate::{ColumnFamily, DBCommon, ThreadMode};
+use std::ffi::{CStr, CString};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::marker::PhantomData;
@@ -39,26 +39,26 @@ pub struct Checkpoint<'db> {
     inner: *mut ffi::rocksdb_checkpoint_t,
     _db: PhantomData<&'db ()>,
 }
-
+#[derive(Debug)]
 pub struct ExportImportFilesMetaData {
     pub inner: *mut ffi::rocksdb_export_import_files_metadata_t,
 }
 
 #[derive(Debug)]
 #[cfg_attr(feature = "serde1", derive(serde::Serialize, serde::Deserialize))]
-struct RocksdbExportImportFilesMetaData {
-    db_comparator_name: String,
-    files: Vec<RocksdbLevelMetaData>,
+pub struct RocksdbExportImportFilesMetaData {
+    pub db_comparator_name: String,
+    pub files: Vec<RocksdbLevelMetaData>,
 }
 
 // file_type, num_entries, num_deletions, db_path,
 #[derive(Debug)]
 #[cfg_attr(feature = "serde1", derive(serde::Serialize, serde::Deserialize))]
-struct RocksdbLevelMetaData {
+pub struct RocksdbLevelMetaData {
     column_family_name: String,
     level: i32,
     relative_filename: String,
-    name: String,
+    pub name: String,
     file_number: u64,
     file_type: i32,
     directory: String,
@@ -98,7 +98,7 @@ impl ExportImportFilesMetaData {
         Ok(())
     }
 
-    pub fn load<P: AsRef<Path>>(path: P) -> Result<ExportImportFilesMetaData, Error> {
+    pub fn load<P: AsRef<Path>>(path: P, db_path: String) -> Result<ExportImportFilesMetaData, Error> {
         let mut file =
             File::open(path).map_err(|_| Error::new("Open metadate file failed".to_owned()))?;
         let mut result = String::new();
@@ -110,11 +110,12 @@ impl ExportImportFilesMetaData {
         unsafe {
             let mut files = vec![];
             for file in metadata.files {
+                let db_path = db_path.clone();
                 let column_family_name = CString::new(file.column_family_name).unwrap();
                 let relative_filename = CString::new(file.relative_filename).unwrap();
                 let name = CString::new(file.name).unwrap();
                 let directory = CString::new(file.directory).unwrap();
-                let db_path = CString::new(file.db_path).unwrap();
+                let db_path = CString::new(db_path).unwrap();
                 let hex_smallestkey = CString::new(file.hex_smallestkey).unwrap();
                 let hex_largestkey = CString::new(file.hex_largestkey).unwrap();
                 let file_checksum = CString::new(file.file_checksum).unwrap();

@@ -14,10 +14,10 @@
 
 mod util;
 
-use pretty_assertions::assert_eq;
 use haizhi_rocksdb as rocksdb;
+use pretty_assertions::assert_eq;
 
-use rocksdb::{checkpoint::Checkpoint, Options, DB};
+use rocksdb::{checkpoint::{Checkpoint, ExportImportFilesMetaData}, Options, DB};
 use util::DBPath;
 
 #[test]
@@ -138,6 +138,8 @@ fn test_export_column_family() {
     let result = checkpoint.export_column_family(cf1, &export_path);
     assert!(result.is_ok());
     let metadata = result.unwrap();
+    // println!("metadata {:?}", metadata.save("save"));
+    // metadata = ExportImportFilesMetaData::load("save").unwrap();
     // new db from export path
     let recover_db_path = DBPath::new(&format!("{}db1_recover", PATH_PREFIX));
     let mut recover_db = DB::open(&opts, &recover_db_path).unwrap();

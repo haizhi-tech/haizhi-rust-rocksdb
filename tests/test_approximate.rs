@@ -39,7 +39,11 @@ fn test_approximate() {
     );
     let files_error_margin: f64 = 1.0;
     let f = db
-        .get_approximate_sizes_with_option(cf1, &[Ranges::new(start_key, end_key)], files_error_margin)
+        .get_approximate_sizes_with_option(
+            cf1,
+            &[Ranges::new(start_key, end_key)],
+            files_error_margin,
+        )
         .unwrap();
 
     for ele in f {
@@ -58,7 +62,11 @@ fn test_approximate() {
     let none: Option<Vec<u8>> = None;
     db.compact_range(none.clone(), none);
     let f = db
-        .get_approximate_sizes_with_option(cf1, &[Ranges::new(start_key, end_key)], files_error_margin)
+        .get_approximate_sizes_with_option(
+            cf1,
+            &[Ranges::new(start_key, end_key)],
+            files_error_margin,
+        )
         .unwrap();
     for ele in f {
         println!("the size of cf1 with memtable and sstfile is {}", ele);
