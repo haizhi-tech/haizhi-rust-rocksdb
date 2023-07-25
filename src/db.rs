@@ -1953,14 +1953,14 @@ impl<T: ThreadMode, D: DBInner> DBCommon<T, D> {
         ranges: &[Ranges],
         files_size_error_margin: f64,
     ) -> Result<Vec<u64>, Error> {
-        let start_keys: Vec<*const i8> = ranges
+        let start_keys: Vec<*const _> = ranges
             .iter()
-            .map(|x| x.start_key.as_ptr() as *const c_char)
+            .map(|x| x.start_key.as_ptr() as *const _)
             .collect();
         let start_key_lens: Vec<_> = ranges.iter().map(|x| x.start_key.len()).collect();
-        let end_keys: Vec<*const i8> = ranges
+        let end_keys: Vec<*const _> = ranges
             .iter()
-            .map(|x| x.end_key.as_ptr() as *const c_char)
+            .map(|x| x.end_key.as_ptr() as *const _)
             .collect();
         let end_key_lens: Vec<_> = ranges.iter().map(|x| x.end_key.len()).collect();
         let db = self.inner.inner();
@@ -2189,7 +2189,7 @@ impl<I: DBInner> DBCommon<MultiThreaded, I> {
 
     /// Create column family from importing data
     pub fn create_cf_with_import<N: AsRef<str>>(
-        &mut self,
+        &self,
         name: N,
         opts: &Options,
         metadata: &ExportImportFilesMetaData,

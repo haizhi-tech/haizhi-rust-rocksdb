@@ -1,15 +1,15 @@
 [package]
 name = "haizhi-rocksdb"
 description = "Rust wrapper for Facebook's RocksDB embeddable database"
-version = "0.2.0"
+version = "0.2.5"
 edition = "2018"
 rust-version = "1.60"
 authors = ["Tyler Neely <t@jujit.su>", "David Greenberg <dsg123456789@gmail.com>"]
-repository = "https://github.com/rust-rocksdb/rust-rocksdb"
+repository = "https://github.com/haizhi-tech/haizhi-rust-rocksdb/"
 license = "Apache-2.0"
 categories = [ "database" ]
 keywords = ["database", "embedded", "LSM-tree", "persistence"]
-homepage = "https://github.com/rust-rocksdb/rust-rocksdb"
+homepage = "https://github.com/haizhi-tech/haizhi-rust-rocksdb/"
 exclude = [
     ".gitignore",
     ".travis.yml",
@@ -36,7 +36,7 @@ serde1 = ["serde"]
 
 [dependencies]
 libc = "0.2"
-haizhi-librocksdb-sys = { path = "librocksdb-sys", version = "0.2.0" }
+haizhi-librocksdb-sys = { path = "librocksdb-sys", version = "0.2.1" }
 serde = { version = "1", features = [ "derive" ], optional = true }
 serde_json = "1.0.0"
 
