@@ -17,7 +17,10 @@ mod util;
 use haizhi_rocksdb as rocksdb;
 use pretty_assertions::assert_eq;
 
-use rocksdb::{checkpoint::{Checkpoint, ExportImportFilesMetaData}, Options, DB};
+use rocksdb::{
+    checkpoint::{Checkpoint, ExportImportFilesMetaData},
+    Options, DB,
+};
 use util::DBPath;
 
 #[test]
