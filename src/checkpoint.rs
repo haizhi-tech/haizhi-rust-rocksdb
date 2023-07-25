@@ -98,7 +98,10 @@ impl ExportImportFilesMetaData {
         Ok(())
     }
 
-    pub fn load<P: AsRef<Path>>(path: P, db_path: String) -> Result<ExportImportFilesMetaData, Error> {
+    pub fn load<P: AsRef<Path>>(
+        path: P,
+        db_path: String,
+    ) -> Result<ExportImportFilesMetaData, Error> {
         let mut file =
             File::open(path).map_err(|_| Error::new("Open metadate file failed".to_owned()))?;
         let mut result = String::new();
