@@ -157,9 +157,10 @@ pub struct Cache(pub(crate) Arc<CacheWrapper>);
 
 impl Cache {
     /// Creates an LRU cache with capacity in bytes.
-    pub fn new_lru_cache(capacity: size_t) -> Cache {
-        let inner = NonNull::new(unsafe { ffi::rocksdb_cache_create_lru(capacity) }).unwrap();
-        Cache(Arc::new(CacheWrapper { inner }))
+    pub fn new_lru_cache(capacity: size_t) -> Result<Cache, Error> {
+        let inner = NonNull::new(unsafe { ffi::rocksdb_cache_create_lru(capacity) })
+            .ok_or(Error::new("Could not create Cache".to_owned()))?;
+        Ok(Cache(Arc::new(CacheWrapper { inner })))
     }
 
     /// Creates an LRU cache with custom options.
