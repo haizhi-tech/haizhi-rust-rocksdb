@@ -14,6 +14,7 @@
 
 mod util;
 
+use std::convert::TryInto;
 use std::{mem, sync::Arc, thread, time::Duration};
 
 use haizhi_rocksdb as rocksdb;
@@ -407,6 +408,39 @@ fn test_get_updates_since_empty() {
     // get_updates_since() on an empty database
     let mut iter = db.get_updates_since(0).unwrap();
     assert!(iter.next().is_none());
+}
+
+#[test]
+fn test_get_updates_since_start() {
+    let path = DBPath::new("_rust_rocksdb_test_test_get_updates_since_start");
+    let db = DB::open_default(&path).unwrap();
+    // add some records and collect sequence numbers,
+    // verify 4 batches of 1 put each were done
+    let seq0 = db.latest_sequence_number();
+    db.put(b"key1", b"value1").unwrap();
+    db.put(b"key2", b"value2").unwrap();
+    db.put(b"key3", b"value3").unwrap();
+    db.put(b"key4", b"value4").unwrap();
+    let mut iter = db.get_updates_since(seq0).unwrap();
+    let mut counts = OperationCounts {
+        puts: 0,
+        deletes: 0,
+    };
+    let (seq, batch) = iter.next().unwrap().unwrap();
+    assert_eq!(seq, 1);
+    batch.iterate(&mut counts);
+    let (seq, batch) = iter.next().unwrap().unwrap();
+    assert_eq!(seq, 2);
+    batch.iterate(&mut counts);
+    let (seq, batch) = iter.next().unwrap().unwrap();
+    assert_eq!(seq, 3);
+    batch.iterate(&mut counts);
+    let (seq, batch) = iter.next().unwrap().unwrap();
+    assert_eq!(seq, 4);
+    batch.iterate(&mut counts);
+    assert!(iter.next().is_none());
+    assert_eq!(counts.puts, 4);
+    assert_eq!(counts.deletes, 0);
 }
 
 #[test]
@@ -817,7 +851,7 @@ fn get_with_cache_and_bulkload_test() {
 
     {
         // set block based table and cache
-        let cache = Cache::new_lru_cache(512 << 10).unwrap();
+        let cache = Cache::new_lru_cache(512 << 10);
         assert_eq!(cache.get_usage(), 0);
         let mut block_based_opts = BlockBasedOptions::default();
         block_based_opts.set_block_cache(&cache);
@@ -952,7 +986,7 @@ fn get_with_cache_and_bulkload_and_blobs_test() {
 
     {
         // set block based table and cache
-        let cache = Cache::new_lru_cache(512 << 10).unwrap();
+        let cache = Cache::new_lru_cache(512 << 10);
         assert_eq!(cache.get_usage(), 0);
         let mut block_based_opts = BlockBasedOptions::default();
         block_based_opts.set_block_cache(&cache);
@@ -1294,6 +1328,38 @@ fn key_may_exist_cf() {
 
         assert!(!db.key_may_exist_cf(&cf, "nonexistent"));
         assert!(!db.key_may_exist_cf_opt(&cf, "nonexistent", &ReadOptions::default()));
+    }
+}
+
+#[test]
+fn key_may_exist_cf_value() {
+    let path = DBPath::new("_rust_key_may_exist_cf_value");
+
+    {
+        let mut opts = Options::default();
+        opts.create_if_missing(true);
+        opts.create_missing_column_families(true);
+        let db = DB::open_cf(&opts, &path, ["cf"]).unwrap();
+        let cf = db.cf_handle("cf").unwrap();
+
+        // put some entry into db
+        for i in 0..10000i32 {
+            let _ = db.put_cf(&cf, i.to_le_bytes(), i.to_le_bytes());
+        }
+
+        // call `key_may_exist_cf_opt_value`
+        for i in 0..10000i32 {
+            let (may_exist, value) =
+                db.key_may_exist_cf_opt_value(&cf, i.to_le_bytes(), &ReadOptions::default());
+
+            // all these numbers may exist
+            assert!(may_exist);
+
+            // check value correctness
+            if let Some(value) = value {
+                assert_eq!(i32::from_le_bytes(value.as_ref().try_into().unwrap()), i);
+            }
+        }
     }
 }
 

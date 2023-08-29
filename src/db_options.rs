@@ -14,7 +14,7 @@
 
 use std::ffi::CStr;
 use std::path::Path;
-use std::ptr::null_mut;
+use std::ptr::{null_mut, NonNull};
 use std::slice;
 use std::sync::Arc;
 
@@ -35,18 +35,14 @@ use crate::{
     ColumnFamilyDescriptor, Error, SnapshotWithThreadMode,
 };
 
-fn new_cache(capacity: size_t) -> *mut ffi::rocksdb_cache_t {
-    unsafe { ffi::rocksdb_cache_create_lru(capacity) }
-}
-
 pub(crate) struct CacheWrapper {
-    pub(crate) inner: *mut ffi::rocksdb_cache_t,
+    pub(crate) inner: NonNull<ffi::rocksdb_cache_t>,
 }
 
 impl Drop for CacheWrapper {
     fn drop(&mut self) {
         unsafe {
-            ffi::rocksdb_cache_destroy(self.inner);
+            ffi::rocksdb_cache_destroy(self.inner.as_ptr());
         }
     }
 }
@@ -55,30 +51,55 @@ impl Drop for CacheWrapper {
 pub struct Cache(pub(crate) Arc<CacheWrapper>);
 
 impl Cache {
-    /// Create a lru cache with capacity
-    pub fn new_lru_cache(capacity: size_t) -> Result<Cache, Error> {
-        let cache = new_cache(capacity);
-        if cache.is_null() {
-            Err(Error::new("Could not create Cache".to_owned()))
-        } else {
-            Ok(Cache(Arc::new(CacheWrapper { inner: cache })))
-        }
+    /// Creates an LRU cache with capacity in bytes.
+    pub fn new_lru_cache(capacity: size_t) -> Cache {
+        let inner = NonNull::new(unsafe { ffi::rocksdb_cache_create_lru(capacity) }).unwrap();
+        Cache(Arc::new(CacheWrapper { inner }))
     }
 
-    /// Returns the Cache memory usage
+    /// Creates a HyperClockCache with capacity in bytes.
+    ///
+    /// `estimated_entry_charge` is an important tuning parameter. The optimal
+    /// choice at any given time is
+    /// `(cache.get_usage() - 64 * cache.get_table_address_count()) /
+    /// cache.get_occupancy_count()`, or approximately `cache.get_usage() /
+    /// cache.get_occupancy_count()`.
+    ///
+    /// However, the value cannot be changed dynamically, so as the cache
+    /// composition changes at runtime, the following tradeoffs apply:
+    ///
+    /// * If the estimate is substantially too high (e.g., 25% higher),
+    ///   the cache may have to evict entries to prevent load factors that
+    ///   would dramatically affect lookup times.
+    /// * If the estimate is substantially too low (e.g., less than half),
+    ///   then meta data space overhead is substantially higher.
+    ///
+    /// The latter is generally preferable, and picking the larger of
+    /// block size and meta data block size is a reasonable choice that
+    /// errs towards this side.
+    pub fn new_hyper_clock_cache(capacity: size_t, estimated_entry_charge: size_t) -> Cache {
+        Cache(Arc::new(CacheWrapper {
+            inner: NonNull::new(unsafe {
+                ffi::rocksdb_cache_create_hyper_clock(capacity, estimated_entry_charge)
+            })
+            .unwrap(),
+        }))
+    }
+
+    /// Returns the cache memory usage in bytes.
     pub fn get_usage(&self) -> usize {
-        unsafe { ffi::rocksdb_cache_get_usage(self.0.inner) }
+        unsafe { ffi::rocksdb_cache_get_usage(self.0.inner.as_ptr()) }
     }
 
-    /// Returns pinned memory usage
+    /// Returns the pinned memory usage in bytes.
     pub fn get_pinned_usage(&self) -> usize {
-        unsafe { ffi::rocksdb_cache_get_pinned_usage(self.0.inner) }
+        unsafe { ffi::rocksdb_cache_get_pinned_usage(self.0.inner.as_ptr()) }
     }
 
-    /// Sets cache capacity
+    /// Sets cache capacity in bytes.
     pub fn set_capacity(&mut self, capacity: size_t) {
         unsafe {
-            ffi::rocksdb_cache_set_capacity(self.0.inner, capacity);
+            ffi::rocksdb_cache_set_capacity(self.0.inner.as_ptr(), capacity);
         }
     }
 }
@@ -106,14 +127,12 @@ impl OptionsMustOutliveDB {
 #[derive(Default)]
 struct BlockBasedOptionsMustOutliveDB {
     block_cache: Option<Cache>,
-    block_cache_compressed: Option<Cache>,
 }
 
 impl BlockBasedOptionsMustOutliveDB {
     fn clone(&self) -> Self {
         Self {
             block_cache: self.block_cache.as_ref().map(Cache::clone),
-            block_cache_compressed: self.block_cache_compressed.as_ref().map(Cache::clone),
         }
     }
 }
@@ -145,8 +164,6 @@ impl BlockBasedOptionsMustOutliveDB {
 ///    opts.set_level_zero_stop_writes_trigger(2000);
 ///    opts.set_level_zero_slowdown_writes_trigger(0);
 ///    opts.set_compaction_style(DBCompactionStyle::Universal);
-///    opts.set_max_background_compactions(4);
-///    opts.set_max_background_flushes(4);
 ///    opts.set_disable_auto_compactions(true);
 ///
 ///    DB::open(&opts, path).unwrap()
@@ -380,39 +397,6 @@ impl BlockBasedOptions {
         }
     }
 
-    /// When provided: use the specified cache for blocks.
-    /// Otherwise rocksdb will automatically create and use an 8MB internal cache.
-    #[deprecated(
-        since = "0.15.0",
-        note = "This function will be removed in next release. Use set_block_cache instead"
-    )]
-    pub fn set_lru_cache(&mut self, size: size_t) {
-        let cache = new_cache(size);
-        unsafe {
-            // Since cache is wrapped in shared_ptr, we don't need to
-            // call rocksdb_cache_destroy explicitly.
-            ffi::rocksdb_block_based_options_set_block_cache(self.inner, cache);
-        }
-    }
-
-    /// When configured: use the specified cache for compressed blocks.
-    /// Otherwise rocksdb will not use a compressed block cache.
-    ///
-    /// Note: though it looks similar to `block_cache`, RocksDB doesn't put the
-    /// same type of object there.
-    #[deprecated(
-        since = "0.15.0",
-        note = "This function will be removed in next release. Use set_block_cache_compressed instead"
-    )]
-    pub fn set_lru_cache_compressed(&mut self, size: size_t) {
-        let cache = new_cache(size);
-        unsafe {
-            // Since cache is wrapped in shared_ptr, we don't need to
-            // call rocksdb_cache_destroy explicitly.
-            ffi::rocksdb_block_based_options_set_block_cache_compressed(self.inner, cache);
-        }
-    }
-
     /// Sets global cache for blocks (user data is stored in a set of blocks, and
     /// a block is the unit of reading from disk). Cache must outlive DB instance which uses it.
     ///
@@ -420,19 +404,9 @@ impl BlockBasedOptions {
     /// By default, rocksdb will automatically create and use an 8MB internal cache.
     pub fn set_block_cache(&mut self, cache: &Cache) {
         unsafe {
-            ffi::rocksdb_block_based_options_set_block_cache(self.inner, cache.0.inner);
+            ffi::rocksdb_block_based_options_set_block_cache(self.inner, cache.0.inner.as_ptr());
         }
         self.outlive.block_cache = Some(cache.clone());
-    }
-
-    /// Sets global cache for compressed blocks. Cache must outlive DB instance which uses it.
-    ///
-    /// By default, rocksdb will not use a compressed block cache.
-    pub fn set_block_cache_compressed(&mut self, cache: &Cache) {
-        unsafe {
-            ffi::rocksdb_block_based_options_set_block_cache_compressed(self.inner, cache.0.inner);
-        }
-        self.outlive.block_cache_compressed = Some(cache.clone());
     }
 
     /// Disable block cache
@@ -659,6 +633,15 @@ impl BlockBasedOptions {
             ffi::rocksdb_block_based_options_set_whole_key_filtering(self.inner, c_uchar::from(v));
         }
     }
+
+    /// Use the specified checksum type.
+    /// Newly created table files will be protected with this checksum type.
+    /// Old table files will still be readable, even though they have different checksum type.
+    pub fn set_checksum_type(&mut self, checksum_type: ChecksumType) {
+        unsafe {
+            ffi::rocksdb_block_based_options_set_checksum(self.inner, checksum_type as c_char);
+        }
+    }
 }
 
 impl Default for BlockBasedOptions {
@@ -773,7 +756,7 @@ impl Options {
                 path.as_ptr(),
                 env.0.inner,
                 ignore_unknown_options,
-                cache.0.inner,
+                cache.0.inner.as_ptr(),
                 &mut db_options,
                 &mut num_column_families,
                 &mut column_family_names,
@@ -1038,8 +1021,8 @@ impl Options {
     ///
     /// Note that to actually unable bottom-most compression configuration after
     /// setting the compression type it needs to be enabled by calling
-    /// [`set_bottommost_compression_options`] or
-    /// [`set_bottommost_zstd_max_train_bytes`] method with `enabled` argument
+    /// [`set_bottommost_compression_options`](#method.set_bottommost_compression_options) or
+    /// [`set_bottommost_zstd_max_train_bytes`](#method.set_bottommost_zstd_max_train_bytes) method with `enabled` argument
     /// set to `true`.
     ///
     /// # Examples
@@ -1134,9 +1117,9 @@ impl Options {
     }
 
     /// Sets compression options for blocks at the bottom-most level.  Meaning
-    /// of all settings is the same as in [`set_compression_options`] method but
+    /// of all settings is the same as in [`set_compression_options`](#method.set_compression_options) method but
     /// affect only the bottom-most compression which is set using
-    /// [`set_bottommost_compression_type`] method.
+    /// [`set_bottommost_compression_type`](#method.set_bottommost_compression_type) method.
     ///
     /// # Examples
     ///
@@ -1346,7 +1329,7 @@ impl Options {
     /// The client must ensure that the comparator supplied here has the same
     /// name and orders keys *exactly* the same as the comparator provided to
     /// previous open calls on the same DB.
-    pub fn set_comparator(&mut self, name: impl CStrLike, compare_fn: CompareFn) {
+    pub fn set_comparator(&mut self, name: impl CStrLike, compare_fn: Box<CompareFn>) {
         let cb = Box::new(ComparatorCallback {
             name: name.into_c_string().unwrap(),
             f: compare_fn,
@@ -1367,14 +1350,6 @@ impl Options {
         unsafe {
             ffi::rocksdb_options_set_prefix_extractor(self.inner, prefix_extractor.inner);
         }
-    }
-
-    #[deprecated(
-        since = "0.5.0",
-        note = "add_comparator has been renamed to set_comparator"
-    )]
-    pub fn add_comparator(&mut self, name: &str, compare_fn: CompareFn) {
-        self.set_comparator(name, compare_fn);
     }
 
     pub fn optimize_for_point_lookup(&mut self, cache_size: u64) {
@@ -1708,10 +1683,10 @@ impl Options {
     /// # Examples
     ///
     /// ```
-    /// #[allow(deprecated)]
     /// use rocksdb::Options;
     ///
     /// let mut opts = Options::default();
+    /// #[allow(deprecated)]
     /// opts.set_allow_os_buffer(false);
     /// ```
     #[deprecated(
@@ -2134,6 +2109,7 @@ impl Options {
     /// use rocksdb::Options;
     ///
     /// let mut opts = Options::default();
+    /// #[allow(deprecated)]
     /// opts.set_max_background_compactions(2);
     /// ```
     #[deprecated(
@@ -2169,6 +2145,7 @@ impl Options {
     /// use rocksdb::Options;
     ///
     /// let mut opts = Options::default();
+    /// #[allow(deprecated)]
     /// opts.set_max_background_flushes(2);
     /// ```
     #[deprecated(
@@ -2849,7 +2826,7 @@ impl Options {
     /// Not supported in ROCKSDB_LITE mode!
     pub fn set_row_cache(&mut self, cache: &Cache) {
         unsafe {
-            ffi::rocksdb_options_set_row_cache(self.inner, cache.0.inner);
+            ffi::rocksdb_options_set_row_cache(self.inner, cache.0.inner.as_ptr());
         }
         self.outlive.row_cache = Some(cache.clone());
     }
@@ -2999,7 +2976,7 @@ impl Options {
 
     /// Enable the use of key-value separation.
     ///
-    /// More details can be found here: http://rocksdb.org/blog/2021/05/26/integrated-blob-db.html.
+    /// More details can be found here: [Integrated BlobDB](http://rocksdb.org/blog/2021/05/26/integrated-blob-db.html).
     ///
     /// Default: false (disable)
     ///
@@ -3461,6 +3438,17 @@ impl ReadOptions {
             ffi::rocksdb_readoptions_set_pin_data(self.inner, c_uchar::from(v));
         }
     }
+
+    /// Asynchronously prefetch some data.
+    ///
+    /// Used for sequential reads and internal automatic prefetching.
+    ///
+    /// Default: `false`
+    pub fn set_async_io(&mut self, v: bool) {
+        unsafe {
+            ffi::rocksdb_readoptions_set_async_io(self.inner, c_uchar::from(v));
+        }
+    }
 }
 
 impl Default for ReadOptions {
@@ -3579,6 +3567,15 @@ pub enum MemtableFactory {
     HashLinkList {
         bucket_count: usize,
     },
+}
+
+/// Used by BlockBasedOptions::set_checksum_type.
+pub enum ChecksumType {
+    NoChecksum = 0,
+    CRC32c = 1,
+    XXHash = 2,
+    XXHash64 = 3,
+    XXH3 = 4, // Supported since RocksDB 6.27
 }
 
 /// Used with DBOptions::set_plain_table_factory.

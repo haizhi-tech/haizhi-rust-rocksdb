@@ -101,12 +101,15 @@ fn build_rocksdb() {
         .filter(|file| !matches!(*file, "util/build_version.cc"))
         .collect::<Vec<&'static str>>();
 
-    if target.contains("x86_64") {
+    if let (true, Ok(target_feature_value)) = (
+        target.contains("x86_64"),
+        env::var("CARGO_CFG_TARGET_FEATURE"),
+    ) {
         // This is needed to enable hardware CRC32C. Technically, SSE 4.2 is
         // only available since Intel Nehalem (about 2010) and AMD Bulldozer
         // (about 2011).
-        let target_feature = env::var("CARGO_CFG_TARGET_FEATURE").unwrap();
-        let target_features: Vec<_> = target_feature.split(',').collect();
+        let target_features: Vec<_> = target_feature_value.split(',').collect();
+
         if target_features.contains(&"sse2") {
             config.flag_if_supported("-msse2");
         }
@@ -147,7 +150,7 @@ fn build_rocksdb() {
         config.define("ROCKSDB_PLATFORM_POSIX", None);
         config.define("ROCKSDB_LIB_IO_POSIX", None);
 
-        env::set_var("IPHONEOS_DEPLOYMENT_TARGET", "11.0");
+        env::set_var("IPHONEOS_DEPLOYMENT_TARGET", "12.0");
     } else if target.contains("darwin") {
         config.define("OS_MACOSX", None);
         config.define("ROCKSDB_PLATFORM_POSIX", None);
@@ -224,6 +227,11 @@ fn build_rocksdb() {
         pkg_config::probe_library("liburing")
             .expect("The io-uring feature was requested but the library is not available");
         config.define("ROCKSDB_IOURING_PRESENT", Some("1"));
+    }
+
+    if env::var("CARGO_CFG_TARGET_POINTER_WIDTH").unwrap() != "64" {
+        config.define("_FILE_OFFSET_BITS", Some("64"));
+        config.define("_LARGEFILE64_SOURCE", Some("1"));
     }
 
     if target.contains("msvc") {
