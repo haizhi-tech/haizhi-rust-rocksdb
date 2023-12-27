@@ -26,6 +26,7 @@ use crate::{
     comparator::{self, ComparatorCallback, CompareFn},
     db::DBAccess,
     env::Env,
+    event_listener::{self, EventListener},
     ffi,
     ffi_util::{from_cstr, to_cpath, CStrLike},
     merge_operator::{
@@ -876,6 +877,20 @@ impl Options {
                 self.inner,
                 memtable_memory_budget as u64,
             );
+        }
+    }
+
+    pub fn add_event_listener<L: EventListener>(&mut self, l: L) {
+        let listener = Box::new(l);
+
+        unsafe {
+            let listener = ffi::rocksdb_event_listener_create(
+                Box::into_raw(listener).cast::<c_void>(),
+                Some(event_listener::on_flush_begin::<L>),
+                Some(event_listener::on_flush_completed::<L>),
+            );
+
+            ffi::rocksdb_options_add_event_listener(self.inner, listener);
         }
     }
 
