@@ -105,6 +105,7 @@ mod sst_file_writer;
 pub mod statistics;
 mod transactions;
 mod write_batch;
+mod event_listener;
 
 pub use crate::{
     column_family::{
@@ -142,6 +143,7 @@ pub use crate::{
         TransactionDBOptions, TransactionOptions,
     },
     write_batch::{WriteBatch, WriteBatchIterator, WriteBatchWithTransaction},
+    event_listener::{EventListener, FlushJobInfo},
 };
 
 use haizhi_librocksdb_sys as ffi;
