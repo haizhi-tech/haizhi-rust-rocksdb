@@ -894,6 +894,12 @@ impl Options {
         }
     }
 
+    pub fn set_periodic_compaction_seconds(&mut self, sec: u64) {
+        unsafe {
+            ffi::rocksdb_options_set_periodic_compaction_seconds(self.inner, sec);
+        }
+    }
+
     /// If true, the database will be created if it is missing.
     ///
     /// Default: `false`

@@ -86,6 +86,7 @@ mod db_iterator;
 mod db_options;
 mod db_pinnable_slice;
 mod env;
+mod event_listener;
 mod iter_range;
 pub mod merge_operator;
 pub mod perf;
@@ -95,7 +96,6 @@ mod snapshot;
 mod sst_file_writer;
 mod transactions;
 mod write_batch;
-mod event_listener;
 
 pub use crate::{
     column_family::{
@@ -120,6 +120,7 @@ pub use crate::{
     },
     db_pinnable_slice::DBPinnableSlice,
     env::Env,
+    event_listener::{EventListener, FlushJobInfo},
     ffi_util::CStrLike,
     iter_range::{IterateBounds, PrefixRange},
     merge_operator::MergeOperands,
@@ -132,7 +133,6 @@ pub use crate::{
         TransactionDBOptions, TransactionOptions,
     },
     write_batch::{WriteBatch, WriteBatchIterator, WriteBatchWithTransaction},
-    event_listener::{EventListener, FlushJobInfo},
 };
 
 use haizhi_librocksdb_sys as ffi;
