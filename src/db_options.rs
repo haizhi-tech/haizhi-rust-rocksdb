@@ -922,6 +922,58 @@ pub enum LogLevel {
     Header,
 }
 
+pub(crate) struct RateLimterInner {
+    pub(crate) inner: NonNull<ffi::rocksdb_ratelimiter_t>,
+}
+
+impl Drop for RateLimterInner {
+    fn drop(&mut self) {
+        unsafe {
+            ffi::rocksdb_ratelimiter_destroy(self.inner.as_ptr());
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct RateLimter(pub(crate) Arc<RateLimterInner>);
+
+impl RateLimter {
+    pub fn new(
+        rate_bytes_per_sec: i64,
+        refill_period_us: i64,
+        fairness: i32,
+    ) -> Result<RateLimter, Error> {
+        let inner = NonNull::new(unsafe {
+            ffi::rocksdb_ratelimiter_create(rate_bytes_per_sec, refill_period_us, fairness)
+        })
+        .ok_or(Error::new("Could not create RateLimter".to_owned()))?;
+        Ok(RateLimter(Arc::new(RateLimterInner { inner })))
+    }
+}
+
+pub(crate) struct SstFileManagerInner {
+    pub(crate) inner: NonNull<ffi::rocksdb_sstfilemanager_t>,
+}
+
+impl Drop for SstFileManagerInner {
+    fn drop(&mut self) {
+        unsafe {
+            ffi::rocksdb_sstfilemanager_destroy(self.inner.as_ptr());
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct SstFileManager(pub(crate) Arc<SstFileManagerInner>);
+
+impl SstFileManager {
+    pub fn new() -> Result<SstFileManager, Error> {
+        let inner = NonNull::new(unsafe { ffi::rocksdb_sstfilemanager_create() })
+            .ok_or(Error::new("Could not create SstFileManager".to_owned()))?;
+        Ok(SstFileManager(Arc::new(SstFileManagerInner { inner })))
+    }
+}
+
 impl Options {
     /// Constructs the DBOptions and ColumnFamilyDescriptors by loading the
     /// latest RocksDB options file stored in the specified rocksdb database.
@@ -3267,6 +3319,20 @@ impl Options {
             );
             ffi::rocksdb_options_set_ratelimiter(self.inner, ratelimiter);
             ffi::rocksdb_ratelimiter_destroy(ratelimiter);
+        }
+    }
+
+    pub fn set_ratelimiter_by_self(&mut self, ratelimiter: &RateLimter) {
+        unsafe {
+            // Since limiter is wrapped in shared_ptr, we don't need to
+            // call rocksdb_ratelimiter_destroy explicitly.
+            ffi::rocksdb_options_set_ratelimiter(self.inner, ratelimiter.0.inner.as_ptr());
+        }
+    }
+
+    pub fn set_sstfilemanager(&mut self, sstfilemanager: &SstFileManager) {
+        unsafe {
+            ffi::rocksdb_options_set_sstfilemanager(self.inner, sstfilemanager.0.inner.as_ptr());
         }
     }
 
