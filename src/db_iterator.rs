@@ -173,6 +173,12 @@ impl<'a, D: DBAccess> DBRawIteratorWithThreadMode<'a, D> {
         }
     }
 
+    pub fn refresh(&mut self) {
+        unsafe {
+            ffi::rocksdb_iter_refresh(self.inner.as_ptr());
+        }
+    }
+
     /// Seeks to the last key in the database.
     ///
     /// # Examples
