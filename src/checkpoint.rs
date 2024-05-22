@@ -78,6 +78,9 @@ pub struct RocksdbLevelMetaData {
     file_creation_time: u64,
     file_checksum: String,
     file_checksum_func_name: String,
+    epoch_number: u64,
+    hex_smallest: String,
+    hex_largest: String,
 }
 
 impl ExportImportFilesMetaData {
@@ -123,6 +126,8 @@ impl ExportImportFilesMetaData {
                 let hex_largestkey = CString::new(file.hex_largestkey).unwrap();
                 let file_checksum = CString::new(file.file_checksum).unwrap();
                 let file_checksum_func_name = CString::new(file.file_checksum_func_name).unwrap();
+                let hex_smallest = CString::new(file.hex_smallest).unwrap();
+                let hex_largest = CString::new(file.hex_largest).unwrap();
                 files.push(ffi_try!(ffi::rocksdb_new_live_file_metadata(
                     column_family_name.as_ptr(),
                     file.level,
@@ -147,6 +152,9 @@ impl ExportImportFilesMetaData {
                     file.file_creation_time,
                     file_checksum.as_ptr(),
                     file_checksum_func_name.as_ptr(),
+                    file.epoch_number,
+                    hex_smallest.as_ptr(),
+                    hex_largest.as_ptr(),
                 )));
             }
 
