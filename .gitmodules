@@ -4,7 +4,7 @@
 [submodule "librocksdb-sys/rocksdb"]
 	path = librocksdb-sys/rocksdb
 	url = https://github.com/haizhi-tech/rocksdb.git
-	branch = v7.9.2_statistics_cf
+	branch = v8.1.1-hz-snapshot-fix
 [submodule "librocksdb-sys/lz4"]
 	path = librocksdb-sys/lz4
 	url = https://github.com/lz4/lz4.git
