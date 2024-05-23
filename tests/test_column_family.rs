@@ -538,7 +538,8 @@ fn test_create_cf_with_import() {
     let origin_metadata = result.unwrap();
     let metadata_path = Path::new("/tmp/db1_metadata.json");
     origin_metadata.save(metadata_path).unwrap();
-    let recover_metadata = ExportImportFilesMetaData::load(metadata_path, origin_db_string_path.clone()).unwrap();
+    let recover_metadata =
+        ExportImportFilesMetaData::load(metadata_path, origin_db_string_path.clone()).unwrap();
     // new db from export path
     let recover_db_path = DBPath::new(&format!("{}db1_recover", PATH_PREFIX));
     let mut recover_db = DB::open(&opts, &recover_db_path).unwrap();
