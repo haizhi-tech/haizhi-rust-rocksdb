@@ -1,5 +1,6 @@
-mod util;
+use haizhi_rocksdb as rocksdb;
 
+mod util;
 use rocksdb::{CompactOptions, Options, ReadOptions, DB};
 use std::cmp::Ordering;
 use std::iter::FromIterator;
