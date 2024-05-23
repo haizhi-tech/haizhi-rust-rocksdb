@@ -1,11 +1,11 @@
 error[E0597]: `db` does not live long enough
- --> tests/fail/snapshot_outlive_transaction_db.rs:6:9
+ --> tests/fail/snapshot_outlive_transaction_db.rs:7:9
   |
-4 |     let _snapshot = {
+5 |     let _snapshot = {
   |         --------- borrow later stored here
-5 |         let db = TransactionDB::<SingleThreaded>::open_default("foo").unwrap();
+6 |         let db = TransactionDB::<SingleThreaded>::open_default("foo").unwrap();
   |             -- binding `db` declared here
-6 |         db.snapshot()
+7 |         db.snapshot()
   |         ^^^^^^^^^^^^^ borrowed value does not live long enough
-7 |     };
+8 |     };
   |     - `db` dropped here while still borrowed

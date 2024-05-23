@@ -1,3 +1,4 @@
+use haizhi_rocksdb as rocksdb;
 use rocksdb::{SingleThreaded, DBWithThreadMode, Options};
 
 fn main() {
