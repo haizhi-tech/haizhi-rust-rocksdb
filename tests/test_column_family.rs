@@ -14,7 +14,6 @@
 
 mod util;
 
-use haizhi_rocksdb as rocksdb;
 use pretty_assertions::assert_eq;
 
 use rocksdb::checkpoint::{Checkpoint, ExportImportFilesMetaData};
@@ -121,7 +120,6 @@ fn test_column_family() {
 }
 
 #[test]
-#[ignore]
 fn test_column_family_with_transactiondb() {
     let n = DBPath::new("_rust_rocksdb_cftest");
 
@@ -508,7 +506,7 @@ fn test_create_cf_with_import() {
 
     // Create DB with some data
     let origin_db_string_path = format!("{}db1", PATH_PREFIX);
-    std::fs::remove_dir_all(&origin_db_string_path);
+    let _ = std::fs::remove_dir_all(&origin_db_string_path);
     let origin_db_path = Path::new(&origin_db_string_path);
 
     let mut opts = Options::default();
@@ -568,5 +566,5 @@ fn test_create_cf_with_import() {
     );
     assert_eq!(origin_db.get_cf(&cf3, b"1").unwrap().unwrap(), b"1");
     assert!(origin_db.get_cf(&cf3, b"11").unwrap().is_none());
-    std::fs::remove_dir_all(&origin_db_string_path);
+    let _ = std::fs::remove_dir_all(&origin_db_string_path);
 }

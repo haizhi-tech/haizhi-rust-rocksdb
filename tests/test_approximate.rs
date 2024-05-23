@@ -1,4 +1,3 @@
-use haizhi_rocksdb as rocksdb;
 use std::time::Duration;
 
 use rocksdb::Ranges;

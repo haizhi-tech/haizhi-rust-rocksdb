@@ -17,7 +17,6 @@ mod util;
 use std::convert::TryInto;
 use std::{mem, sync::Arc, thread, time::Duration};
 
-use haizhi_rocksdb as rocksdb;
 use pretty_assertions::assert_eq;
 
 use rocksdb::{

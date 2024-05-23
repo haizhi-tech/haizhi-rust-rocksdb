@@ -1,5 +1,3 @@
-use haizhi_rocksdb as rocksdb;
-
 use rocksdb::{Options, DB};
 use std::cmp::Ordering;
 use std::iter::FromIterator;

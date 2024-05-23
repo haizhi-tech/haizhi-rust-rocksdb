@@ -14,7 +14,6 @@
 
 mod util;
 
-use haizhi_rocksdb as rocksdb;
 use std::{sync::Arc, thread};
 
 use rocksdb::DB;
