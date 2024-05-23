@@ -15,7 +15,6 @@
 
 mod util;
 
-use haizhi_rocksdb as rocksdb;
 use pretty_assertions::assert_eq;
 
 use rocksdb::{
@@ -213,7 +212,6 @@ fn multi_get_cf() {
 }
 
 #[test]
-#[ignore]
 fn destroy_on_open() {
     let path = DBPath::new("_rust_rocksdb_transaction_db_destroy_on_open");
     let _db: TransactionDB = TransactionDB::open_default(&path).unwrap();
@@ -382,7 +380,6 @@ fn prefix_extract_and_iterate_test() {
 }
 
 #[test]
-#[ignore]
 fn cuckoo() {
     let path = DBPath::new("_rust_rocksdb_transaction_db_cuckoo");
 
@@ -510,7 +507,6 @@ fn transaction_iterator() {
 }
 
 #[test]
-#[ignore]
 fn transaction_rollback() {
     let path = DBPath::new("_rust_rocksdb_transaction_db_transaction_rollback");
     {
@@ -605,7 +601,6 @@ fn transaction_snapshot() {
 }
 
 #[test]
-#[ignore]
 fn two_phase_commit() {
     let path = DBPath::new("_rust_rocksdb_transaction_db_2pc");
     {

@@ -1,5 +1,5 @@
 [package]
-name = "haizhi-rocksdb"
+name = "rocksdb"
 description = "Rust wrapper for Facebook's RocksDB embeddable database"
 version = "0.2.8"
 edition = "2021"
