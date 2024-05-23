@@ -1,3 +1,5 @@
+use haizhi_rocksdb as rocksdb;
+
 use rocksdb::{DB, checkpoint::Checkpoint};
 
 fn main() {
