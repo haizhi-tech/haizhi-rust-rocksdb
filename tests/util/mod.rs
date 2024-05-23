@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use haizhi_rocksdb as rocksdb;
 use std::{
     cmp::Ordering,
     convert::TryInto,
@@ -7,6 +8,7 @@ use std::{
 };
 
 use rocksdb::{Error, Options, DB};
+use std::path::{Path, PathBuf};
 
 /// Temporary database path which calls DB::Destroy when DBPath is dropped.
 pub struct DBPath {

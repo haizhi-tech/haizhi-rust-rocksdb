@@ -16,6 +16,8 @@ mod util;
 
 use pretty_assertions::assert_eq;
 
+use haizhi_rocksdb as rocksdb;
+
 use rocksdb::checkpoint::{Checkpoint, ExportImportFilesMetaData};
 use rocksdb::{ColumnFamilyDescriptor, MergeOperands, Options, DB, DEFAULT_COLUMN_FAMILY_NAME};
 use rocksdb::{TransactionDB, TransactionDBOptions};
