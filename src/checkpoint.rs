@@ -78,8 +78,11 @@ pub struct RocksdbLevelMetaData {
     file_creation_time: u64,
     file_checksum: String,
     file_checksum_func_name: String,
+    #[serde(default)]
     epoch_number: u64,
+    #[serde(default)]
     hex_smallest: String,
+    #[serde(default)]
     hex_largest: String,
 }
 
