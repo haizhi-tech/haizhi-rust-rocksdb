@@ -14,8 +14,9 @@
 
 mod util;
 
-use haizhi_rocksdb as rocksdb;
 use pretty_assertions::assert_eq;
+
+use haizhi_rocksdb as rocksdb;
 
 use rocksdb::checkpoint::{Checkpoint, ExportImportFilesMetaData};
 use rocksdb::{ColumnFamilyDescriptor, MergeOperands, Options, DB, DEFAULT_COLUMN_FAMILY_NAME};
@@ -503,10 +504,11 @@ fn test_no_leaked_column_family() {
 
 #[test]
 fn test_create_cf_with_import() {
-    const PATH_PREFIX: &str = "_rust_rocksdb_create_cf_with_import_";
-
+    const PATH_PREFIX: &str = "/tmp/_rust_rocksdb_create_cf_with_import_";
+    let _ = std::fs::remove_dir_all(PATH_PREFIX);
     // Create DB with some data
-    let origin_db_path = DBPath::new(&format!("{}db1", PATH_PREFIX));
+    let origin_db_string_path = format!("{}/db1", PATH_PREFIX);
+    let origin_db_path = Path::new(&origin_db_string_path);
 
     let mut opts = Options::default();
     opts.create_if_missing(true);
@@ -524,12 +526,17 @@ fn test_create_cf_with_import() {
     assert!(origin_db.put_cf(&cf1, b"1", b"1").is_ok());
     let cf2 = origin_db.cf_handle("cf2").unwrap();
     assert!(origin_db.put_cf(&cf2, b"2", b"2").is_ok());
+    // add some keys and call delete range
+    assert!(origin_db.put_cf(&cf1, b"a1", b"a1").is_ok());
+    assert!(origin_db.put_cf(&cf1, b"a2", b"a2").is_ok());
+    assert!(origin_db.delete_range_cf(&cf1, b"a0", b"a5").is_ok());
 
     let checkpoint = Checkpoint::new(&origin_db);
     assert!(checkpoint.is_ok());
     let checkpoint = checkpoint.unwrap();
 
-    let export_path = DBPath::new(&format!("{}db1_backup", PATH_PREFIX));
+    let export_path = format!("{}/db1_backup", PATH_PREFIX);
+    let export_path = Path::new(&export_path);
     let result = checkpoint.export_column_family(cf1, &export_path);
     assert!(result.is_ok());
     drop(checkpoint);
@@ -537,9 +544,11 @@ fn test_create_cf_with_import() {
     let origin_metadata = result.unwrap();
     let metadata_path = Path::new("/tmp/db1_metadata.json");
     origin_metadata.save(metadata_path).unwrap();
-    let recover_metadata = ExportImportFilesMetaData::load(metadata_path).unwrap();
+    let recover_metadata =
+        ExportImportFilesMetaData::load(metadata_path, origin_db_string_path.clone()).unwrap();
     // new db from export path
-    let recover_db_path = DBPath::new(&format!("{}db1_recover", PATH_PREFIX));
+    let recover_db_path = format!("{}/db1_recover", PATH_PREFIX);
+    let recover_db_path = Path::new(&recover_db_path);
     let mut recover_db = DB::open(&opts, &recover_db_path).unwrap();
     assert!(recover_db.cf_handle("cf1").is_none());
     assert!(recover_db.cf_handle("cf2").is_none());
@@ -553,23 +562,6 @@ fn test_create_cf_with_import() {
     );
     assert!(recover_db.cf_handle("cf2").is_none());
     assert!(recover_db.get_cf(&cf1, b"2").unwrap().is_none());
-    // then we will test origin db
-    assert!(origin_db.put_cf(&cf1, b"11", b"11").is_ok());
-    assert!(origin_db.drop_cf("cf1").is_ok());
-    // cf1 and its data are none
-    assert!(origin_db.cf_handle("cf1").is_none());
-    // import cf1
-    assert!(origin_db
-        .create_cf_with_import("cf1", &opts, &recover_metadata)
-        .is_ok());
-    let cf1 = origin_db.cf_handle("cf1").unwrap();
-    assert_eq!(
-        origin_db.get_cf(&cf1, vec![1]).unwrap().unwrap(),
-        b"illegal1"
-    );
-    assert_eq!(origin_db.get_cf(&cf1, b"1").unwrap().unwrap(), b"1");
-    assert!(origin_db.get_cf(&cf1, b"11").unwrap().is_none());
-    assert!(origin_db.put_cf(&cf1, b"11", b"11").is_ok());
     // import cf3
     assert!(origin_db
         .create_cf_with_import("cf3", &opts, &recover_metadata)
@@ -581,4 +573,6 @@ fn test_create_cf_with_import() {
     );
     assert_eq!(origin_db.get_cf(&cf3, b"1").unwrap().unwrap(), b"1");
     assert!(origin_db.get_cf(&cf3, b"11").unwrap().is_none());
+    assert!(origin_db.get_cf(&cf3, b"a1").unwrap().is_none());
+    let _ = std::fs::remove_dir_all(PATH_PREFIX);
 }

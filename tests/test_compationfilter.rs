@@ -13,8 +13,8 @@
 // limitations under the License.
 
 mod util;
-
 use haizhi_rocksdb as rocksdb;
+
 use pretty_assertions::assert_eq;
 
 use rocksdb::{CompactionDecision, Options, DB};

@@ -14,10 +14,11 @@
 
 mod util;
 
+use haizhi_rocksdb as rocksdb;
+
 use std::convert::TryInto;
 use std::{mem, sync::Arc, thread, time::Duration};
 
-use haizhi_rocksdb as rocksdb;
 use pretty_assertions::assert_eq;
 
 use rocksdb::{
@@ -851,7 +852,7 @@ fn get_with_cache_and_bulkload_test() {
 
     {
         // set block based table and cache
-        let cache = Cache::new_lru_cache(512 << 10);
+        let cache = Cache::new_lru_cache(512 << 10).unwrap();
         assert_eq!(cache.get_usage(), 0);
         let mut block_based_opts = BlockBasedOptions::default();
         block_based_opts.set_block_cache(&cache);
@@ -986,7 +987,7 @@ fn get_with_cache_and_bulkload_and_blobs_test() {
 
     {
         // set block based table and cache
-        let cache = Cache::new_lru_cache(512 << 10);
+        let cache = Cache::new_lru_cache(512 << 10).unwrap();
         assert_eq!(cache.get_usage(), 0);
         let mut block_based_opts = BlockBasedOptions::default();
         block_based_opts.set_block_cache(&cache);

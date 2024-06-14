@@ -16,7 +16,9 @@ mod util;
 
 use pretty_assertions::assert_eq;
 
-use haizhi_rocksdb::{
+use haizhi_rocksdb as rocksdb;
+
+use rocksdb::{
     backup::{BackupEngine, BackupEngineOptions, RestoreOptions},
     Env, DB,
 };
