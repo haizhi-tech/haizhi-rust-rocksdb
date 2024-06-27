@@ -1,6 +1,6 @@
 [package]
 name = "haizhi-librocksdb-sys"
-version = "0.2.9+8.1.1"
+version = "0.2.10+8.1.1"
 edition = "2018"
 rust-version = "1.60"
 authors = ["Karl Hobley <karlhobley10@gmail.com>", "Arkadiy Paronyan <arkadiy@ethcore.io>"]
