@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use haizhi_rocksdb as rocksdb;
+use gdiist_rocksdb as rocksdb;
 
 use rocksdb::Ranges;
 use rocksdb::{ColumnFamilyDescriptor, Options, DB};

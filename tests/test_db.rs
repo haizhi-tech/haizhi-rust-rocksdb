@@ -14,7 +14,7 @@
 
 mod util;
 
-use haizhi_rocksdb as rocksdb;
+use gdiist_rocksdb as rocksdb;
 
 use std::convert::TryInto;
 use std::{mem, sync::Arc, thread, time::Duration};

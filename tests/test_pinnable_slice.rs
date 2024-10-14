@@ -14,7 +14,7 @@
 
 mod util;
 
-use haizhi_rocksdb as rocksdb;
+use gdiist_rocksdb as rocksdb;
 use pretty_assertions::assert_eq;
 
 use rocksdb::{Options, DB};

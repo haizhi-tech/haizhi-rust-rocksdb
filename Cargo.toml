@@ -1,15 +1,15 @@
 [package]
-name = "haizhi-rocksdb"
+name = "gdiist-rocksdb"
 description = "Rust wrapper for Facebook's RocksDB embeddable database"
 version = "0.2.8"
 edition = "2018"
 rust-version = "1.60"
 authors = ["Tyler Neely <t@jujit.su>", "David Greenberg <dsg123456789@gmail.com>"]
-repository = "https://github.com/haizhi-tech/haizhi-rust-rocksdb/"
+repository = "https://github.com/gdiist-tech/gdiist-rust-rocksdb/"
 license = "Apache-2.0"
 categories = [ "database" ]
 keywords = ["database", "embedded", "LSM-tree", "persistence"]
-homepage = "https://github.com/haizhi-tech/haizhi-rust-rocksdb/"
+homepage = "https://github.com/gdiist-tech/gdiist-rust-rocksdb/"
 exclude = [
     ".gitignore",
     ".travis.yml",
@@ -22,21 +22,21 @@ members = ["librocksdb-sys"]
 
 [features]
 default = ["snappy", "lz4", "zstd", "zlib", "bzip2", "serde1"]
-jemalloc = ["haizhi-librocksdb-sys/jemalloc"]
-io-uring = ["haizhi-librocksdb-sys/io-uring"]
+jemalloc = ["gdiist-librocksdb-sys/jemalloc"]
+io-uring = ["gdiist-librocksdb-sys/io-uring"]
 valgrind = []
-snappy = ["haizhi-librocksdb-sys/snappy"]
-lz4 = ["haizhi-librocksdb-sys/lz4"]
-zstd = ["haizhi-librocksdb-sys/zstd"]
-zlib = ["haizhi-librocksdb-sys/zlib"]
-bzip2 = ["haizhi-librocksdb-sys/bzip2"]
-rtti = ["haizhi-librocksdb-sys/rtti"]
+snappy = ["gdiist-librocksdb-sys/snappy"]
+lz4 = ["gdiist-librocksdb-sys/lz4"]
+zstd = ["gdiist-librocksdb-sys/zstd"]
+zlib = ["gdiist-librocksdb-sys/zlib"]
+bzip2 = ["gdiist-librocksdb-sys/bzip2"]
+rtti = ["gdiist-librocksdb-sys/rtti"]
 multi-threaded-cf = []
 serde1 = ["serde"]
 
 [dependencies]
 libc = "0.2"
-haizhi-librocksdb-sys = { path = "librocksdb-sys", version = "0.2.7" }
+gdiist-librocksdb-sys = { path = "librocksdb-sys", version = "0.2.7" }
 serde = { version = "1", features = [ "derive" ], optional = true }
 serde_json = "1.0.0"
 

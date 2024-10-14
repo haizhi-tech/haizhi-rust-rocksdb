@@ -136,7 +136,7 @@ pub use crate::{
     write_batch::{WriteBatch, WriteBatchIterator, WriteBatchWithTransaction},
 };
 
-use haizhi_librocksdb_sys as ffi;
+use gdiist_librocksdb_sys as ffi;
 
 use std::error;
 use std::fmt;

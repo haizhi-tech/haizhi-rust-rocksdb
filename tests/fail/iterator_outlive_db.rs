@@ -1,4 +1,4 @@
-use haizhi_rocksdb as rocksdb;
+use gdiist_rocksdb as rocksdb;
 use rocksdb::{IteratorMode, DB};
 
 fn main() {

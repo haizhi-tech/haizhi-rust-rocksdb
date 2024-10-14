@@ -14,7 +14,7 @@
 //
 
 mod util;
-use haizhi_rocksdb as rocksdb;
+use gdiist_rocksdb as rocksdb;
 
 use rocksdb::{
     CuckooTableOptions, DBAccess, Direction, Error, ErrorKind, IteratorMode,

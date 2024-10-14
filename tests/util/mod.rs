@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use haizhi_rocksdb as rocksdb;
+use gdiist_rocksdb as rocksdb;
 use rocksdb::{Error, Options, DB};
 use std::path::{Path, PathBuf};
 
