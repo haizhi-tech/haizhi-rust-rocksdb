@@ -1138,12 +1138,6 @@ impl Options {
         }
     }
 
-    pub fn set_periodic_compaction_seconds(&mut self, sec: u64) {
-        unsafe {
-            ffi::rocksdb_options_set_periodic_compaction_seconds(self.inner, sec);
-        }
-    }
-
     /// If true, the database will be created if it is missing.
     ///
     /// Default: `false`
@@ -4770,7 +4764,7 @@ mod tests {
     #[test]
     fn test_set_write_buffer_manager() {
         let mut opts = Options::default();
-        let lrucache = Cache::new_lru_cache(100);
+        let lrucache = Cache::new_lru_cache(100).unwrap();
         let write_buffer_manager =
             WriteBufferManager::new_write_buffer_manager_with_cache(100, false, lrucache);
         assert_eq!(write_buffer_manager.get_buffer_size(), 100);

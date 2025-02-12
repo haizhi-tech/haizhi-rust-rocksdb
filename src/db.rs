@@ -2363,7 +2363,7 @@ impl<T: ThreadMode, D: DBInner> DBCommon<T, D> {
                 true,
                 true,
                 files_size_error_margin,
-            ))
+            ));
         }
         Ok(sizes)
     }
@@ -2549,13 +2549,11 @@ impl<T: ThreadMode, D: DBInner> DBCommon<T, D> {
         opts: &Options,
         metadata: &ExportImportFilesMetaData,
     ) -> Result<*mut ffi::rocksdb_column_family_handle_t, Error> {
-        let cf_name = if let Ok(c) = CString::new(name.as_bytes()) {
-            c
-        } else {
-            return Err(Error::new(
-                "Failed to convert path to CString when creating cf".to_owned(),
-            ));
-        };
+        let cf_name = CString::new(name.as_bytes()).map_err(|err| {
+            Error::new(format!(
+                "Failed to convert path to CString when creating cf: {err}",
+            ))
+        })?;
         Ok(unsafe {
             ffi_try!(ffi::rocksdb_create_column_family_with_import(
                 self.inner.inner(),

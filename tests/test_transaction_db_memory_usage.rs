@@ -14,6 +14,8 @@
 
 mod util;
 
+use haizhi_rocksdb as rocksdb;
+
 use pretty_assertions::assert_eq;
 
 use rocksdb::{perf, Options, TransactionDB, TransactionDBOptions};
@@ -33,7 +35,7 @@ fn test_transaction_db_memory_usage() {
         options.enable_statistics();
 
         // setup cache:
-        let cache = rocksdb::Cache::new_lru_cache(1 << 20); // 1 MB cache
+        let cache = rocksdb::Cache::new_lru_cache(1 << 20).unwrap(); // 1 MB cache
         let mut block_based_options = rocksdb::BlockBasedOptions::default();
         block_based_options.set_block_cache(&cache);
         options.set_block_based_table_factory(&block_based_options);
