@@ -1517,7 +1517,9 @@ impl Options {
     ///
     /// Leveled: files older than `periodic_compaction_seconds` will be picked up
     /// for compaction and will be re-written to the same level as they were
-    /// before.
+    /// before if level_compaction_dynamic_level_bytes is disabled. Otherwise,
+    /// it will rewrite files to the next level except for the last level files
+    /// to the same level.
     ///
     /// FIFO: not supported. Setting this option has no effect for FIFO compaction.
     ///
@@ -1529,9 +1531,10 @@ impl Options {
     /// UniversalCompactionBuilder::PickPeriodicCompaction().
     /// For backward compatibility, the effective value of this option takes
     /// into account the value of option `ttl`. The logic is as follows:
-    ///    - both options are set to 30 days if they have the default value.
-    ///    - if both options are zero, zero is picked. Otherwise, we take the min
-    ///    value among non-zero options values (i.e. takes the stricter limit).
+    ///
+    /// - both options are set to 30 days if they have the default value.
+    /// - if both options are zero, zero is picked. Otherwise, we take the min
+    ///   value among non-zero options values (i.e. takes the stricter limit).
     ///
     /// One main use of the feature is to make sure a file goes through compaction
     /// filters periodically. Users can also use the feature to clear up SST
@@ -1555,10 +1558,47 @@ impl Options {
     /// Default: 30 days if using block based table format + compaction filter +
     /// leveled compaction or block based table format + universal compaction.
     /// 0 (disabled) otherwise.
-    ///
     pub fn set_periodic_compaction_seconds(&mut self, secs: u64) {
         unsafe {
             ffi::rocksdb_options_set_periodic_compaction_seconds(self.inner, secs);
+        }
+    }
+
+    /// This option has different meanings for different compaction styles:
+    ///
+    /// Leveled: Non-bottom-level files with all keys older than TTL will go
+    ///    through the compaction process. This usually happens in a cascading
+    ///    way so that those entries will be compacted to bottommost level/file.
+    ///    The feature is used to remove stale entries that have been deleted or
+    ///    updated from the file system.
+    ///
+    /// FIFO: Files with all keys older than TTL will be deleted. TTL is only
+    ///    supported if option max_open_files is set to -1.
+    ///
+    /// Universal: users should only set the option `periodic_compaction_seconds`
+    ///    instead. For backward compatibility, this option has the same
+    ///    meaning as `periodic_compaction_seconds`. See more in comments for
+    ///    `periodic_compaction_seconds` on the interaction between these two
+    ///    options.
+    ///
+    /// This option only supports block based table format for any compaction
+    /// style.
+    ///
+    /// unit: seconds. Ex: 1 day = 1 * 24 * 60 * 60
+    /// 0 means disabling.
+    /// UINT64_MAX - 1 (0xfffffffffffffffe) is special flag to allow RocksDB to
+    /// pick default.
+    ///
+    /// Default: 30 days if using block based table. 0 (disable) otherwise.
+    ///
+    /// Dynamically changeable
+    /// Note that dynamically changing this option only works for leveled and FIFO
+    /// compaction. For universal compaction, dynamically changing this option has
+    /// no effect, users should dynamically change `periodic_compaction_seconds`
+    /// instead.
+    pub fn set_ttl(&mut self, secs: u64) {
+        unsafe {
+            ffi::rocksdb_options_set_ttl(self.inner, secs);
         }
     }
 
