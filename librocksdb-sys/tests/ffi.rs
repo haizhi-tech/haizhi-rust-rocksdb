@@ -24,8 +24,8 @@
 )]
 
 use const_cstr::const_cstr;
+use haizhi_librocksdb_sys::*;
 use libc::*;
-use librocksdb_sys::*;
 use std::borrow::Cow;
 use std::env;
 use std::ffi::{CStr, CString};

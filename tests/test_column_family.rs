@@ -512,7 +512,7 @@ fn test_create_cf_with_import() {
 
     let mut opts = Options::default();
     opts.create_if_missing(true);
-    let mut origin_db = DB::open(&opts, &origin_db_path).unwrap();
+    let mut origin_db = DB::open(&opts, origin_db_path).unwrap();
     // create two column families
     assert!(origin_db.create_cf("cf1", &opts).is_ok());
     assert!(origin_db.create_cf("cf2", &opts).is_ok());
@@ -537,7 +537,7 @@ fn test_create_cf_with_import() {
 
     let export_path = format!("{}/db1_backup", PATH_PREFIX);
     let export_path = Path::new(&export_path);
-    let result = checkpoint.export_column_family(cf1, &export_path);
+    let result = checkpoint.export_column_family(&cf1, export_path);
     assert!(result.is_ok());
     drop(checkpoint);
 
@@ -549,7 +549,7 @@ fn test_create_cf_with_import() {
     // new db from export path
     let recover_db_path = format!("{}/db1_recover", PATH_PREFIX);
     let recover_db_path = Path::new(&recover_db_path);
-    let mut recover_db = DB::open(&opts, &recover_db_path).unwrap();
+    let mut recover_db = DB::open(&opts, recover_db_path).unwrap();
     assert!(recover_db.cf_handle("cf1").is_none());
     assert!(recover_db.cf_handle("cf2").is_none());
     let result = recover_db.create_cf_with_import("cf1", &opts, &recover_metadata);

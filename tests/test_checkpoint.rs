@@ -18,10 +18,7 @@ use pretty_assertions::assert_eq;
 
 use haizhi_rocksdb as rocksdb;
 
-use rocksdb::{
-    checkpoint::{Checkpoint, ExportImportFilesMetaData},
-    Options, DB,
-};
+use rocksdb::{checkpoint::Checkpoint, Options, DB};
 use util::DBPath;
 
 #[test]
@@ -139,7 +136,7 @@ fn test_export_column_family() {
 
     let export_path = DBPath::new(&format!("{}db1_backup", PATH_PREFIX));
     // let export_path = Path::new("db1_backup");
-    let result = checkpoint.export_column_family(cf1, &export_path);
+    let result = checkpoint.export_column_family(&cf1, &export_path);
     assert!(result.is_ok());
     let metadata = result.unwrap();
     // println!("metadata {:?}", metadata.save("save"));

@@ -18,12 +18,12 @@
 //! [1]: https://github.com/facebook/rocksdb/wiki/Checkpoints
 
 use crate::AsColumnFamilyRef;
-use crate::{ffi, Error, DB};
-use libc::{c_char, int32_t};
+use crate::{ffi, Error};
+use libc::c_char;
 
 use crate::db::DBInner;
 use crate::ffi_util::to_cpath;
-use crate::{ColumnFamily, DBCommon, ThreadMode};
+use crate::{DBCommon, ThreadMode};
 use std::ffi::{CStr, CString};
 use std::fs::File;
 use std::io::{Read, Write};
@@ -215,13 +215,11 @@ impl<'db> Checkpoint<'db> {
         export_dir: P,
     ) -> Result<ExportImportFilesMetaData, Error> {
         let path = export_dir.as_ref();
-        let cpath = if let Ok(c) = CString::new(path.to_string_lossy().as_bytes()) {
-            c
-        } else {
-            return Err(Error::new(
-                "Failed to convert path to CString when creating DB checkpoint".to_owned(),
-            ));
-        };
+        let cpath = CString::new(path.to_string_lossy().as_bytes()).map_err(|err| {
+            Error::new(format!(
+                "Failed to convert path to CString when creating DB checkpoint: {err}"
+            ))
+        })?;
 
         let inner: *mut ffi::rocksdb_export_import_files_metadata_t;
 
