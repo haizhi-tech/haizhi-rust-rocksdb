@@ -51,11 +51,62 @@ impl Drop for CacheWrapper {
 #[derive(Clone)]
 pub struct Cache(pub(crate) Arc<CacheWrapper>);
 
+/// Options for creating an LRU cache. Defaults preserve RocksDB's automatic sharding.
+#[derive(Debug, Clone)]
+pub struct LRUCacheOption {
+    num_shard_bits: c_int,
+}
+
+impl Default for LRUCacheOption {
+    fn default() -> Self {
+        Self { num_shard_bits: -1 }
+    }
+}
+
+impl LRUCacheOption {
+    /// Sets cache sharding: `-1` selects automatic sharding; `0..=19` creates
+    /// `2^bits` shards. Values are validated when the cache is created.
+    pub fn set_num_shard_bits(&mut self, bits: c_int) {
+        self.num_shard_bits = bits;
+    }
+}
+
 impl Cache {
     /// Creates an LRU cache with capacity in bytes.
     pub fn new_lru_cache(capacity: size_t) -> Result<Cache, Error> {
         let inner = NonNull::new(unsafe { ffi::rocksdb_cache_create_lru(capacity) })
             .ok_or(Error::new("Could not create Cache".to_owned()))?;
+        Ok(Cache(Arc::new(CacheWrapper { inner })))
+    }
+
+    /// Creates an LRU cache with capacity in bytes and the supplied options.
+    ///
+    /// `num_shard_bits` must be in `-1..=19`. Use `-1` to let RocksDB choose
+    /// based on capacity, or `0..=19` for `2^num_shard_bits` shards. Capacity
+    /// is divided evenly among shards; this is unrelated to database shards.
+    /// All other LRU cache options retain their RocksDB defaults.
+    /// The cache does not borrow `option`; it can be dropped or reused afterwards.
+    pub fn new_lru_cache_with_option(
+        capacity: size_t,
+        option: &LRUCacheOption,
+    ) -> Result<Cache, Error> {
+        let num_shard_bits = option.num_shard_bits;
+        // The C API can return a non-null wrapper containing a null cache when
+        // NewLRUCache rejects the options. Validate before crossing the FFI
+        // boundary so later cache operations cannot dereference that null cache.
+        if !(-1..=19).contains(&num_shard_bits) {
+            return Err(Error::new("num_shard_bits must be in -1..=19".to_owned()));
+        }
+        let inner = unsafe {
+            let options = NonNull::new(ffi::rocksdb_lru_cache_options_create())
+                .ok_or_else(|| Error::new("Could not create LRU cache options".to_owned()))?;
+            ffi::rocksdb_lru_cache_options_set_capacity(options.as_ptr(), capacity);
+            ffi::rocksdb_lru_cache_options_set_num_shard_bits(options.as_ptr(), num_shard_bits);
+            let cache = ffi::rocksdb_cache_create_lru_opts(options.as_ptr());
+            // Creation copies the options; the cache does not borrow them.
+            ffi::rocksdb_lru_cache_options_destroy(options.as_ptr());
+            NonNull::new(cache).ok_or_else(|| Error::new("Could not create Cache".to_owned()))?
+        };
         Ok(Cache(Arc::new(CacheWrapper { inner })))
     }
 
